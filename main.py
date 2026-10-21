@@ -24,5 +24,5 @@ V = v(x,z,q,X0)
 w = (np.pi**2 + q**2)*psi #rotationnel du champ de vitesse
 
 
-
+afficher(x,z,U,V )
 
