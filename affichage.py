@@ -11,8 +11,6 @@ def u(x,z,q, X0):
 def v(x,z,q,X0):
     return X0*q*np.cos(np.pi*z)*np.cos(q*x)
 
-def V(x,z,q,X0):
-    return np.array(u(x,z,q,X0),v(x,z,q,X0))
 
 #cherchons à afficher ce champ de vecteurs 
 q=np.pi /np.sqrt(2) #donné dans le sujet 
