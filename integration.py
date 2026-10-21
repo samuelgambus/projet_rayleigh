@@ -19,7 +19,7 @@ def runge_kutta(X,Y,Z):
 def integration(X0,Y0,Z0):
     tab=[[X0,Y0,Z0]]
     for i in range(Nt):
-        tab.append(runge_kutta(tab[i]))
+        tab.append(list(runge_kutta(tab[i][0],tab[i][1],tab[i][2])))
     return tab
 
         
