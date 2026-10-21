@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+from constante import *
 
 
 #on suppose X(t) = X0 constant
@@ -13,7 +14,6 @@ def v(x,z,q,X0):
 
 
 #cherchons à afficher ce champ de vecteurs 
-q=np.pi /np.sqrt(2) #donné dans le sujet 
 X0=1 #on choisit une constante, on verra après comment la choisir
 Y0,Z0=1,1
 """
@@ -42,7 +42,7 @@ def temp(x,z, q, Y, Z):
 def papillon(T):
     fig = plt.figure(figsize=(8, 6))
     ax = fig.add_subplot(projection='3d')
-    ax.plot(T[0], T[1], T[2], label='Courbe papillon', markersize=5, color='blue')
+    ax.plot([t[0] for t in T],[t[1] for t in T],[t[2] for t in T], label='Courbe papillon', markersize=5, color='blue')
     plt.show()
 
 
