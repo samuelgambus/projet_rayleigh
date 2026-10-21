@@ -24,8 +24,12 @@ def afficher(X,Z,U,V):
     plt.quiver(X,Z,U,V)
     plt.show()
 
-def theta(x,z, q, Y, Z):
+
+
+def temp(x,z, q, Y, Z):
     return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
+
+
 
 
 
