@@ -1,15 +1,6 @@
 from affichage import *
+from constante import *
 import numpy as np
-
-############ Constantes de la simulation ############
-
-tau = 360 #s
-Nt = 2**16 #Nombre de pas de temps
-Pr = 10
-b = 8/3
-q = np.pi/2
-grid_length = 50
-grid_height = 50
 
 x_ = np.linspace(-2*np.pi/q,2*np.pi/q,grid_length)
 z_ = np.linspace(-1/2,1/2,grid_height)
