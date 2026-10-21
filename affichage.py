@@ -75,7 +75,7 @@ valeurs_r = [0.5, 18, 350]
 
 #papillons_r(valeurs_r)
 
-r=350
+r=28
 
 
 
@@ -143,7 +143,7 @@ def papillons_CI_comparaison(CI_initiale, r, temps_court_max=30.0):
     plt.tight_layout()
     plt.show()
 
-#papillons_CI_comparaison([X0,Y0,Z0],r)
+papillons_CI_comparaison([X0,Y0,Z0],r)
 
 
 #REMARQUE ANALYSE: on remarque que perturbé ou non, c'est les memes trajectoires
