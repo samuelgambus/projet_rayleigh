@@ -22,6 +22,7 @@ Z=np.linspace(0,10,1)
 def afficher(X,Z,U,V):
     plt.figure()
     plt.quiver(X,Z,U,V)
+    plt.pcolormesh(X,Z,vort(X,Z,q,X0))
     plt.show()
 
 def vort(x,z,q,X0):
