@@ -38,21 +38,12 @@ def vort(x,z,q,X0):
 
 def temp(x,z, q, Y, Z):
     return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
-T=[]
-valeurs_r = [0.5, 18, 28]
-for r in valeurs_r:
-    T.append(integration(X0,Y0,Z0,r))
+def papillons_r(valeurs_r):
+    T=[]
+    for r in valeurs_r:
+        T.append(integration(X0,Y0,Z0,r))
 
-def papillon(T):
-    """
-    fig, axes = plt.subplots(1, 3, figsize=(8, 6))
-    axes[0] = fig.add_subplot(projection='3d')
-    axes[0].plot([t[0] for t in T],[t[1] for t in T],[t[2] for t in T], label='Courbe papillon r=0.5', markersize=5, color='blue')
-    axes[1] = fig.add_subplot(projection='3d')
-    axes[0].plot([t[0] for t in T],[t[1] for t in T],[t[2] for t in T], label='Courbe papillon r=18', markersize=5, color='blue')
-    axes[0] = fig.add_subplot(projection='3d')
-    axes[0].plot([t[0] for t in T],[t[1] for t in T],[t[2] for t in T], label='Courbe papillon r=28', markersize=5, color='blue')
-    """
+
     fig = plt.figure(figsize=(15, 5))
     for i, r in enumerate(valeurs_r):
     # Création du sous-graphique 3D
@@ -80,9 +71,47 @@ def papillon(T):
     plt.show()
 
 
-papillon(T)
+valeurs_r = [0.5, 18, 28]
 
+#papillons_r(valeurs_r)
 
+r=28
+
+def papillons_CI(CI):
+    T=[]
+    for i in range(len(CI)):
+        CI[i]+=CI[i]+10**(-3)*CI[i]
+        T.append(integration(CI[0],CI[1],CI[2],r))
+    
+    
+    fig = plt.figure(figsize=(15, 5))
+    for i, var in enumerate(CI):
+        # Création du sous-graphique 3D
+        ax = fig.add_subplot(1, 3, i + 1, projection='3d')
+        
+        # Récupération de la trajectoire pour le r courant
+        traj = T[i]
+        
+        # Comme 'traj' est une liste de listes [ [X,Y,Z], [X,Y,Z], ... ], 
+        # on extrait chaque coordonnée avec une liste en compréhension :
+        x_vals = [point[0] for point in traj]
+        y_vals = [point[1] for point in traj]
+        z_vals = [point[2] for point in traj]
+        
+        # Tracé de la courbe
+        noms={0:'X', 1:'Y', 2:'Z'}
+        ax.plot(x_vals, y_vals, z_vals, label=f'var = {noms[i]}', color='blue', linewidth=0.6)
+        
+        ax.set_title(f'Système de Lorenz (10**-3 sur = {noms[i]})')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        ax.legend()
+    
+    plt.tight_layout()
+    plt.show()
+
+papillons_CI([X0,Y0,Z0])
 
 
 
