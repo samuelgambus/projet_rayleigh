@@ -24,7 +24,8 @@ def afficher(X,Z,U,V):
     plt.quiver(X,Z,U,V)
     plt.show()
 
-
+def vort(x,z,q,X0):
+    return np.pi**2*X0*np.cos(np.pi*z)*np.sin(q*x)+q**2*X0*np.cos(np.pi*z)*np.sin(q*x)
 
 def temp(x,z, q, Y, Z):
     return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
