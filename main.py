@@ -12,7 +12,7 @@ grid_length = 50
 grid_height = 50
 
 x_ = np.linspace(-2*np.pi/q,2*np.pi/q,grid_length)
-z_ = np.linspace(0,1,grid_height)
+z_ = np.linspace(-1/2,1/2,grid_height)
 x,z = np.meshgrid(x_,z_) #renvoie les coordonnées réelles des éléments de la grille
 
 psi = np.array([[0 for _ in range(grid_length)] for _ in range(grid_height)])
@@ -24,5 +24,5 @@ V = v(x,z,q,X0)
 w = (np.pi**2 + q**2)*psi #rotationnel du champ de vitesse
 
 
-afficher(x,z,U,V )
-
+#afficher_vort_et_vitesse(x,z,U,V )
+#afficher_theta_et_vitesse(x,z,U,V)

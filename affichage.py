@@ -15,15 +15,22 @@ def v(x,z,q,X0):
 #cherchons à afficher ce champ de vecteurs 
 q=np.pi /np.sqrt(2) #donné dans le sujet 
 X0=1 #on choisit une constante, on verra après comment la choisir
+Y0,Z0=1,1
 """
 X=np.linspace(0,10,1)
 Z=np.linspace(0,10,1)
 """
-def afficher(X,Z,U,V):
+def afficher_vort_et_vitesse(X,Z,U,V):
     plt.figure()
     plt.pcolormesh(X,Z,vort(X,Z,q,X0))
     plt.quiver(X,Z,U,V)
     
+    plt.show()
+
+def afficher_theta_et_vitesse(X,Z,U,V):
+    plt.figure()
+    plt.pcolormesh(X,Z,temp(X,Z,q,Y0,Z0))   
+    plt.quiver(X,Z,U,V)
     plt.show()
 
 def vort(x,z,q,X0):
