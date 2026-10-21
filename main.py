@@ -8,8 +8,8 @@ Nt = 2**16 #Nombre de pas de temps
 Pr = 10
 b = 8/3
 q = np.pi/2
-grid_length = 100
-grid_height = 100
+grid_length = 50
+grid_height = 50
 
 x = np.linspace(-2*np.pi/q,2*np.pi/q,grid_length)
 z = np.linspace(0,1,grid_height)
