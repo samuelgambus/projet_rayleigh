@@ -1,5 +1,6 @@
 from affichage import *
 from constante import *
+from integration import *
 import numpy as np
 
 x_ = np.linspace(-2*np.pi/q,2*np.pi/q,grid_length)
@@ -17,3 +18,6 @@ w = (np.pi**2 + q**2)*psi #rotationnel du champ de vitesse
 
 #afficher_vort_et_vitesse(x,z,U,V )
 #afficher_theta_et_vitesse(x,z,U,V)
+
+T = integration(X0,Y0,Z0)
+papillon(T)

@@ -39,6 +39,11 @@ def vort(x,z,q,X0):
 def temp(x,z, q, Y, Z):
     return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
 
+def papillon(T):
+    fig = plt.figure(figsize=(8, 6))
+    ax = fig.add_subplot(projection='3d')
+    ax.plot(T[0], T[1], T[2], label='Courbe papillon', markersize=5, color='blue')
+    plt.show()
 
 
 
