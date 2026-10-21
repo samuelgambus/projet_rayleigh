@@ -52,36 +52,35 @@ def papillon(T):
     axes[0].plot([t[0] for t in T],[t[1] for t in T],[t[2] for t in T], label='Courbe papillon r=18', markersize=5, color='blue')
     axes[0] = fig.add_subplot(projection='3d')
     axes[0].plot([t[0] for t in T],[t[1] for t in T],[t[2] for t in T], label='Courbe papillon r=28', markersize=5, color='blue')
-        # Maintenant, on crée la figure avec 3 sous-graphiques 3D côte à côte
-fig = plt.figure(figsize=(15, 5))
+    """
+    fig = plt.figure(figsize=(15, 5))
+    for i, r in enumerate(valeurs_r):
+    # Création du sous-graphique 3D
+        ax = fig.add_subplot(1, 3, i + 1, projection='3d')
+    
+    # Récupération de la trajectoire pour le r courant
+        traj = T[i]
+    
+    # Comme 'traj' est une liste de listes [ [X,Y,Z], [X,Y,Z], ... ], 
+    # on extrait chaque coordonnée avec une liste en compréhension :
+        x_vals = [point[0] for point in traj]
+        y_vals = [point[1] for point in traj]
+        z_vals = [point[2] for point in traj]
+    
+    # Tracé de la courbe
+        ax.plot(x_vals, y_vals, z_vals, label=f'r = {r}', color='blue', linewidth=0.6)
+    
+        ax.set_title(f'Système de Lorenz (r = {r})')
+        ax.set_xlabel('X')
+        ax.set_ylabel('Y')
+        ax.set_zlabel('Z')
+        ax.legend()
 
-for i, r in enumerate(valeurs_r):
-    # Création de l'axe 3D pour la i-ème position (1 ligne, 3 colonnes, indice i+1)
-    ax = fig.add_subplot(1, 3, i + 1, projection='3d')
-    
-    # On récupère la trajectoire correspondante dans T
-    traj = T[i]
-    
-    # Tracé de la courbe (en gérant le format de traj selon ce que renvoie votre fonction 'integration')
-    # Si 'integration' renvoie un tableau numpy avec les colonnes X, Y, Z :
-    ax.plot(traj[:, 0], traj[:, 1], traj[:, 2], label=f'r = {r}', color='blue', linewidth=0.7)
-    
-    # (Alternative si votre fonction renvoie une liste de tuples/listes au lieu de colonnes numpy :)
-    # ax.plot([t[0] for t in traj], [t[1] for t in traj], [t[2] for t in traj], label=f'r = {r}', color='blue', linewidth=0.7)
-    
-    ax.set_title(f'Attracteur de Lorenz (r = {r})')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.legend()
-
-plt.tight_layout()
-plt.show()    
-    
+    plt.tight_layout()
     plt.show()
 
 
-
+papillon(T)
 
 
 
