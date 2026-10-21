@@ -50,4 +50,4 @@ def bifurcation_chaos(Np): # Affcihe les maximas
     plt.tight_layout()
     plt.show()
 
-bifurcation_chaos(50)
+bifurcation_stable(50)
