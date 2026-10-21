@@ -21,9 +21,10 @@ X0=1 #on choisit une constante, on verra après comment la choisir
 X=np.linspace(0,10,1)
 Z=np.linspace(0,10,1)
 
-plt.figure()
-plt.quiver(X,Z, u(X,Z,q,X0),v(X,Z,q,X0))
-plt.show()
+def afficher(X,Z,U,V):
+    plt.figure()
+    plt.quiver(X,Z,U,V)
+    plt.show()
 
 
 
