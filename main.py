@@ -19,5 +19,8 @@ w = (np.pi**2 + q**2)*psi #rotationnel du champ de vitesse
 #afficher_vort_et_vitesse(x,z,U,V )
 #afficher_theta_et_vitesse(x,z,U,V)
 
+tab = integration(1,0,0,28)
+X,Y,Z = zip(*tab)
 
+t = temp(x,z,q,Y,Z)
 
