@@ -314,5 +314,5 @@ def comparer_r10_r28_instants(indices=[50, 200, 500]):
     plt.tight_layout()
     plt.show()
 
-# Appel de la fonction (vous pouvez changer les indices selon votre nombre de pas Nt)
 comparer_r10_r28_instants(indices=[50, 300, 900])
+
