@@ -317,29 +317,46 @@ def comparer_r10_r28_instants(indices=[50, 200, 500]):
 #comparer_r10_r28_instants(indices=[50, 300, 900])
 
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 def papillons_r_non_constant():
-    fig = plt.figure(figsize=(10, 10))
-
-    ax = fig.add_subplot(1, 3, 1, projection='3d')
-        
-# Récupération de la trajectoire pour le r courant
-    traj = integration_r_increasing(X0,Y0,Z0)
-
-# Comme 'traj' est une liste de listes [ [X,Y,Z], [X,Y,Z], ... ], 
-# on extrait chaque coordonnée avec une liste en compréhension :
-    x_vals = [point[0] for point in traj]
-    y_vals = [point[1] for point in traj]
-    z_vals = [point[2] for point in traj]
-
-# Tracé de la courbe
-    ax.plot(x_vals, y_vals, z_vals, color='blue', linewidth=0.6)
-
-    ax.set_title(f'Système de Lorenz pour r augmentant linéairement en fonction du temps')
-    ax.set_xlabel('X')
-    ax.set_ylabel('Y')
-    ax.set_zlabel('Z')
-    ax.legend()
+    # 1. Utiliser un thème sombre pour faire ressortir les couleurs
+    plt.style.use('dark_background')
     
+    fig = plt.figure(figsize=(10, 10))
+    # 2. Utiliser 1, 1, 1 pour centrer l'unique graphique
+    ax = fig.add_subplot(1, 1, 1, projection='3d')
+        
+    # Récupération de la trajectoire
+    traj = integration_r_increasing(X0, Y0, Z0)
+
+    # Conversion en tableau NumPy pour une manipulation plus performante
+    traj_np = np.array(traj)
+    x_vals = traj_np[:, 0]
+    y_vals = traj_np[:, 1]
+    z_vals = traj_np[:, 2]
+
+    # 3. Créer un dégradé de couleur basé sur le temps (l'index)
+    temps = np.linspace(0, 1, len(x_vals))
+
+    # Tracé avec scatter pour bénéficier du dégradé (cmap)
+    # s=0.5 gère la taille des points, alpha la transparence
+    scatter = ax.scatter(x_vals, y_vals, z_vals, #type:ignore
+                         c=temps, cmap='magma', 
+                         s=0.5, alpha=0.8, edgecolor='none') #type:ignore
+
+    # 4. Esthétique : suppression des axes et de la grille pour un effet "flottant"
+    ax.set_axis_off()
+    
+    ax.set_title('Système de Lorenz (r augmentant)', color='white', fontsize=14, pad=20)
+    
+    # Ajout d'une barre de couleur pour indiquer l'écoulement du temps
+    cbar = plt.colorbar(scatter, ax=ax, shrink=0.5, pad=0.05)
+    cbar.set_label('Évolution du temps', color='white')
+    cbar.ax.yaxis.set_tick_params(color='white')
+    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='white')
+
     plt.tight_layout()
     plt.show()
 
