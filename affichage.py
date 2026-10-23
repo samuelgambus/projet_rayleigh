@@ -143,7 +143,7 @@ def papillons_CI_comparaison(CI_initiale, r, temps_court_max=30.0):
     plt.tight_layout()
     plt.show()
 
-papillons_CI_comparaison([X0,Y0,Z0],r)
+#papillons_CI_comparaison([X0,Y0,Z0],r)
 
 
 #REMARQUE ANALYSE: on remarque que perturbé ou non, c'est les memes trajectoires
@@ -246,13 +246,13 @@ X0, Y0, Z0 = 1.0, 1.0, 1.0
 print("Calcul pour r = 10...")
 traj_r10 = integration(X0, Y0, Z0, r=10)
 # On prend un instant vers la fin de la simulation (ex: le dernier point -1)
-afficher_physique_instant(traj_r10, -1, q)
+#afficher_physique_instant(traj_r10, -1, q)
 
 # --- Cas r = 28 (Régime chaotique) ---
 print("Calcul pour r = 28...")
 traj_r28 = integration(X0, Y0, Z0, r=28)
 # En régime chaotique, les mouvements changent tout le temps, vous pouvez tester différents indices n (ex: 100, 500, -1)
-afficher_physique_instant(traj_r28, -1, q)
+#afficher_physique_instant(traj_r28, -1, q)
 
 
 
@@ -314,5 +314,33 @@ def comparer_r10_r28_instants(indices=[50, 200, 500]):
     plt.tight_layout()
     plt.show()
 
-comparer_r10_r28_instants(indices=[50, 300, 900])
+#comparer_r10_r28_instants(indices=[50, 300, 900])
 
+
+def papillons_r_non_constant():
+    fig = plt.figure(figsize=(10, 10))
+
+    ax = fig.add_subplot(1, 3, 1, projection='3d')
+        
+# Récupération de la trajectoire pour le r courant
+    traj = integration_r_increasing(X0,Y0,Z0)
+
+# Comme 'traj' est une liste de listes [ [X,Y,Z], [X,Y,Z], ... ], 
+# on extrait chaque coordonnée avec une liste en compréhension :
+    x_vals = [point[0] for point in traj]
+    y_vals = [point[1] for point in traj]
+    z_vals = [point[2] for point in traj]
+
+# Tracé de la courbe
+    ax.plot(x_vals, y_vals, z_vals, color='blue', linewidth=0.6)
+
+    ax.set_title(f'Système de Lorenz pour r augmentant linéairement en fonction du temps')
+    ax.set_xlabel('X')
+    ax.set_ylabel('Y')
+    ax.set_zlabel('Z')
+    ax.legend()
+    
+    plt.tight_layout()
+    plt.show()
+
+papillons_r_non_constant()
