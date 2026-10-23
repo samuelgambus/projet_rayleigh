@@ -22,6 +22,11 @@ def integration(X0,Y0,Z0,r): ## Intègre le système 4 entre le temps 0 et tau (
         tab.append(list(runge_kutta(tab[i][0],tab[i][1],tab[i][2],r)))
     return tab
 
+def integration_r_increasing(X0,Y0,Z0): ## Intègre comme la fonction précédente mais r augmente progressivement
+    tab=[[X0,Y0,Z0]]
+    for i in range(Nt):
+        tab.append(list(runge_kutta(tab[i][0],tab[i][1],tab[i][2],i/200)))
+    return tab
         
 
 
