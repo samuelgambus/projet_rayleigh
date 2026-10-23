@@ -45,7 +45,7 @@ def integration_traj(x0,z0,X): ## Intègre le système 4 entre le temps 0 et tau
         tab.append(list(runge_kutta_traj(tab[i][0],tab[i][1],i,X)))
     return tab
 
-X = np.array(integration(1,1,1,10))[:,0]
+X = np.array(integration(1,1,1,28))[:,0]
 tab = integration_traj(1,0,X)
 x = [p[0] for p in tab]
 z = [p[1] for p in tab]
