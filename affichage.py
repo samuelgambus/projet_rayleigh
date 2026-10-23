@@ -154,3 +154,165 @@ papillons_CI_comparaison([X0,Y0,Z0],r)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# --- Fonctions adaptées avec les valeurs à l'instant t ---
+#def u(x,z,q, X0):
+    #return X0*np.pi*np.sin(np.pi*z)*np.sin(q*x)
+
+def u(x, z, q, X_t):
+    return X_t * np.pi * np.sin(np.pi * z) * np.sin(q * x)
+
+#def v(x,z,q,X0):
+    #return X0*q*np.cos(np.pi*z)*np.cos(q*x)
+
+def v(x, z, q, X_t):
+    return X_t * q * np.cos(np.pi * z) * np.cos(q * x)
+
+#def vort(x,z,q,X0):
+    #return np.pi**2*X0*np.cos(np.pi*z)*np.sin(q*x)+q**2*X0*np.cos(np.pi*z)*np.sin(q*x)
+
+def vort(x, z, q, X_t):
+    return np.pi**2 * X_t * np.cos(np.pi * z) * np.sin(q * x) + q**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
+
+#def temp(x,z, q, Y, Z):
+    #return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
+
+def temp(x, z, q, Y_t, Z_t):
+    return Y_t * np.cos(np.pi * z) * np.cos(q * x) + Z_t * np.sin(2 * np.pi * z)
+
+
+
+def afficher_physique_instant(traj, n, q):
+    # Récupération des valeurs de X, Y, Z à l'instant t_n
+    X_n = traj[n][0]
+    Y_n = traj[n][1]
+    Z_n = traj[n][2]
+    
+    # Définition de l'espace physique (selon le sujet : x dans [-2*pi/q, 2*pi/q] et z dans [0, 1])
+    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 40)
+    z_vals = np.linspace(0, 1, 40)
+    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
+    
+    # Calcul des champs sur la grille
+    U = u(X_grid, Z_grid, q, X_n)
+    V = v(X_grid, Z_grid, q, X_n)
+    Vort_grid = vort(X_grid, Z_grid, q, X_n)
+    Theta_grid = temp(X_grid, Z_grid, q, Y_n, Z_n)
+    
+    # --- Figure 1 : Vorticité et Champ de vitesse ---
+    plt.figure(figsize=(10, 4))
+    plt.pcolormesh(X_grid, Z_grid, Vort_grid, shading='auto', cmap='coolwarm')
+    plt.colorbar(label='Vorticité')
+    plt.quiver(X_grid, Z_grid, U, V, color='black')
+    plt.title(f"Vorticité et Vitesse (instant n={n})")
+    plt.xlabel('x')
+    plt.ylabel('z')
+    plt.tight_layout()
+    plt.show()
+    
+    # --- Figure 2 : Température et Champ de vitesse ---
+    plt.figure(figsize=(10, 4))
+    plt.pcolormesh(X_grid, Z_grid, Theta_grid, shading='auto', cmap='inferno')
+    plt.colorbar(label='Écart de température theta')
+    plt.quiver(X_grid, Z_grid, U, V, color='white')
+    plt.title(f"Température et Vitesse (instant n={n})")
+    plt.xlabel('x')
+    plt.ylabel('z')
+    plt.tight_layout()
+    plt.show()
+
+
+
+# Paramètre du nombre d'onde q donné dans le sujet
+
+
+# Condition initiale et paramètres
+X0, Y0, Z0 = 1.0, 1.0, 1.0
+
+# --- Cas r = 10 (Régime stable / stationnaire) ---
+print("Calcul pour r = 10...")
+traj_r10 = integration(X0, Y0, Z0, r=10)
+# On prend un instant vers la fin de la simulation (ex: le dernier point -1)
+afficher_physique_instant(traj_r10, -1, q)
+
+# --- Cas r = 28 (Régime chaotique) ---
+print("Calcul pour r = 28...")
+traj_r28 = integration(X0, Y0, Z0, r=28)
+# En régime chaotique, les mouvements changent tout le temps, vous pouvez tester différents indices n (ex: 100, 500, -1)
+afficher_physique_instant(traj_r28, -1, q)
+
+
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+from constante import *
+from integration import *
+
+def comparer_r10_r28_instants(indices=[50, 200, 500]):
+    q = np.pi / np.sqrt(2)
+    X0, Y0, Z0 = 1.0, 1.0, 1.0
+    
+    # 1. Calcul des trajectoires pour r = 10 et r = 28
+    print("Calcul des trajectoires...")
+    traj_r10 = integration(X0, Y0, Z0, r=10)
+    traj_r28 = integration(X0, Y0, Z0, r=28)
+    
+    # 2. Définition de la grille spatiale (x et z)
+    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 30)
+    z_vals = np.linspace(0, 1, 30)
+    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
+    
+    # 3. Création de la figure 2x3
+    fig, axes = plt.subplots(2, 3, figsize=(16, 9))
+    
+    # --- LIGNE DU HAUT : r = 10 à 3 instants différents ---
+    for j, n in enumerate(indices):
+        X_n = traj_r10[n][0]
+        
+        # Calcul des champs
+        Vort_grid = vort(X_grid, Z_grid, q, X_n)
+        U = u(X_grid, Z_grid, q, X_n)
+        V = v(X_grid, Z_grid, q, X_n)
+        
+        ax = axes[0, j]
+        im = ax.pcolormesh(X_grid, Z_grid, Vort_grid, shading='auto', cmap='coolwarm')
+        ax.quiver(X_grid, Z_grid, U, V, color='black', scale=400)
+        ax.set_title(f"r = 10 (instant t_n, n={n})")
+        ax.set_xlabel('x')
+        ax.set_ylabel('z')
+
+    # --- LIGNE DU BAS : r = 28 à 3 instants différents ---
+    for j, n in enumerate(indices):
+        X_n = traj_r28[n][0]
+        
+        # Calcul des champs
+        Vort_grid = vort(X_grid, Z_grid, q, X_n)
+        U = u(X_grid, Z_grid, q, X_n)
+        V = v(X_grid, Z_grid, q, X_n)
+        
+        ax = axes[1, j]
+        im = ax.pcolormesh(X_grid, Z_grid, Vort_grid, shading='auto', cmap='coolwarm')
+        ax.quiver(X_grid, Z_grid, U, V, color='black', scale=400)
+        ax.set_title(f"r = 28 (chaos, n={n})")
+        ax.set_xlabel('x')
+        ax.set_ylabel('z')
+
+    plt.tight_layout()
+    plt.show()
+
+# Appel de la fonction (vous pouvez changer les indices selon votre nombre de pas Nt)
+comparer_r10_r28_instants(indices=[50, 300, 900])
