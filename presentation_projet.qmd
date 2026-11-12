@@ -1,0 +1,172 @@
+---
+title: "Nom du projet"
+subtitle: "Une phrase qui résume l'objectif"
+author: "Prénom Nom"
+date: today
+date-format: "DD MMMM YYYY"
+lang: fr
+format:
+  revealjs:
+    theme: [simple, custom.scss]   # supprimer custom.scss si absent
+    slide-number: true
+    chalkboard: false
+    incremental: false
+    transition: fade
+    code-line-numbers: true
+    code-copy: true
+    footer: "Nom du projet · Prénom Nom"
+    logo: logo.png                 # supprimer si pas de logo
+    preview-links: auto
+jupyter: python3
+execute:
+  echo: true        # afficher le code (mettre false pour le masquer)
+  warning: false
+  cache: false
+---
+
+## Contexte et problématique
+
+- **Contexte** : d'où vient le besoin ?
+- **Problème** : quelle question ou difficulté adresse le projet ?
+- **Objectif** : ce que le projet doit permettre de faire
+
+::: {.notes}
+Notes pour l'orateur : visibles avec la touche `S` pendant la présentation.
+:::
+
+## Vue d'ensemble de la solution
+
+::: {.columns}
+::: {.column width="50%"}
+### Fonctionnalités
+
+- Chargement des données
+- Traitement / modélisation
+- Visualisation des résultats
+:::
+::: {.column width="50%"}
+### Stack technique
+
+- Python 3.12
+- pandas, NumPy
+- scikit-learn
+- Matplotlib / Plotly
+:::
+:::
+
+## Architecture
+
+```{mermaid}
+flowchart LR
+    A[Données brutes] --> B[Nettoyage]
+    B --> C[Features]
+    C --> D[Modèle]
+    D --> E[Résultats / API]
+```
+
+## Structure du dépôt
+
+```text
+mon-projet/
+├── src/
+│   └── mon_projet/
+│       ├── __init__.py
+│       ├── data.py
+│       └── model.py
+├── tests/
+├── notebooks/
+├── pyproject.toml
+└── README.md
+```
+
+## Exemple de code
+
+```{python}
+#| code-line-numbers: "1-3|5-8"
+import pandas as pd
+import numpy as np
+
+def moyenne_mobile(serie: pd.Series, fenetre: int = 7) -> pd.Series:
+    """Calcule une moyenne mobile centrée."""
+    return serie.rolling(fenetre, center=True).mean()
+```
+
+## Démonstration : données
+
+```{python}
+#| label: tbl-donnees
+#| echo: false
+import numpy as np
+import pandas as pd
+
+rng = np.random.default_rng(42)
+df = pd.DataFrame({
+    "date": pd.date_range("2025-01-01", periods=120),
+    "valeur": rng.normal(100, 10, 120).cumsum() / 10,
+})
+df.head(5)
+```
+
+## Démonstration : visualisation
+
+```{python}
+#| label: fig-serie
+#| fig-cap: "Évolution de la valeur et moyenne mobile"
+#| echo: false
+import matplotlib.pyplot as plt
+
+fig, ax = plt.subplots(figsize=(9, 4))
+ax.plot(df["date"], df["valeur"], alpha=0.5, label="Brut")
+ax.plot(df["date"], df["valeur"].rolling(7, center=True).mean(),
+        linewidth=2, label="Moyenne mobile (7 j)")
+ax.set_xlabel("Date")
+ax.set_ylabel("Valeur")
+ax.legend()
+ax.spines[["top", "right"]].set_visible(False)
+plt.show()
+```
+
+## Résultats clés
+
+::: {.incremental}
+- **Résultat 1** : chiffre ou constat marquant
+- **Résultat 2** : comparaison avec l'existant
+- **Résultat 3** : gain de temps, de performance, de qualité…
+:::
+
+## Difficultés rencontrées
+
+| Difficulté | Solution apportée |
+|---|---|
+| Qualité des données | Pipeline de nettoyage et validation |
+| Temps de calcul | Vectorisation, mise en cache |
+| Reproductibilité | Environnement figé avec `uv` / `venv` |
+
+## Perspectives
+
+1. Court terme : corriger / finaliser…
+2. Moyen terme : nouvelles fonctionnalités…
+3. Long terme : déploiement, industrialisation…
+
+## Conclusion {.center}
+
+- Ce qu'il faut retenir en une phrase
+- Code disponible sur [GitHub](https://github.com/utilisateur/projet)
+
+**Merci ! Des questions ?**
+
+## Annexe : installation {.smaller}
+
+```bash
+git clone https://github.com/utilisateur/projet.git
+cd projet
+python -m venv .venv && source .venv/bin/activate
+pip install -e .
+```
+
+Pour générer cette présentation :
+
+```bash
+pip install jupyter matplotlib pandas numpy
+quarto render presentation_projet.qmd
+```
