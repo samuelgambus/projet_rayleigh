@@ -27,13 +27,3 @@ def integration_r_increasing(X0,Y0,Z0): ## Intègre comme la fonction précéden
     for i in range(Nt):
         tab.append(list(runge_kutta(tab[i][0],tab[i][1],tab[i][2],i/200))) ## r augmente linéairement avec le pas de temps
     return tab
-        
-
-
-
-
-
-
-
-
-

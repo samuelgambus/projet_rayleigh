@@ -1,13 +1,13 @@
 ---
 title: "Nom du projet"
 subtitle: "Une phrase qui résume l'objectif"
-author: "Prénom Nom"
+author: "Grégoire Tristant Legallais/ Samuel Gambus"
 date: today
 date-format: "DD MMMM YYYY"
 lang: fr
 format:
   revealjs:
-    theme: [simple, custom.scss]   # supprimer custom.scss si absent
+    theme: simple   # supprimer custom.scss si absent
     slide-number: true
     chalkboard: false
     incremental: false
