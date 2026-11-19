@@ -682,4 +682,4 @@ def papillons_r_non_constant():
     plt.tight_layout()
     plt.show()
 
-#papillons_r_non_constant()
+papillons_r_non_constant()
