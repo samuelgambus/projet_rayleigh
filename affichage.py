@@ -268,15 +268,166 @@ def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
     plt.show()
 
 
-# --- Exemple d'utilisation pour r = 10 puis r = 28 ---
+
+
+
+import matplotlib.animation as animation
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def animer_lorenz_rapide(
+    traj, q, r=28, max_frames=250, pas_q=6, interval=40, save_path=None
+):
+    bg_color = "#171d26"
+    text_color = "#f1f5f9"
+    suffix_r = f", r={r}" if r is not None else ""
+
+    n_final = len(traj) - 1
+    nb_frames = min(max_frames, len(traj))
+    indices = np.unique(np.linspace(0, n_final, nb_frames, dtype=int))
+
+    # Grille fine pour le fond et grille espacée pour les flèches
+    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 120)
+    z_vals = np.linspace(0, 1, 120)
+    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
+
+    Xq, Zq = X_grid[::pas_q, ::pas_q], Z_grid[::pas_q, ::pas_q]
+
+    # Estimation rapide des bornes et de l'échelle des flèches sur les frames échantillonnées
+    sample_idx = indices[:: max(1, len(indices) // 40)]
+    vort_min, vort_max = np.inf, -np.inf
+    theta_min, theta_max = np.inf, -np.inf
+    max_speed = 1e-6
+
+    for k in sample_idx:
+        Xk, Yk, Zk = traj[k][0], traj[k][1], traj[k][2]
+        vk = vort(X_grid, Z_grid, q, Xk)
+        tk = temp(X_grid, Z_grid, q, Yk, Zk)
+        uk = u(Xq, Zq, q, Xk)
+        vk_vel = v(Xq, Zq, q, Xk)
+
+        vort_min, vort_max = min(vort_min, np.min(vk)), max(vort_max, np.max(vk))
+        theta_min, theta_max = min(theta_min, np.min(tk)), max(theta_max, np.max(tk))
+        max_speed = max(max_speed, np.max(np.hypot(uk, vk_vel)))
+
+    arrow_scale = max_speed * 7.5
+
+    # État initial (n = indices[0] = 0) — une seule figure avec 2 sous-graphiques superposés
+    X0_n, Y0_n, Z0_n = traj[indices[0]]
+    Vort0 = vort(X_grid, Z_grid, q, X0_n)
+    Theta0 = temp(X_grid, Z_grid, q, Y0_n, Z0_n)
+    Uq0 = u(Xq, Zq, q, X0_n)
+    Vq0 = v(Xq, Zq, q, X0_n)
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), facecolor=bg_color)
+
+    # --- Graphique 1 (en haut) : Vorticité et Vitesse ---
+    ax1.set_facecolor(bg_color)
+    mesh1 = ax1.pcolormesh(
+        X_grid,
+        Z_grid,
+        Vort0,
+        shading="gouraud",
+        cmap="coolwarm",
+        vmin=vort_min,
+        vmax=vort_max,
+    )
+    cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
+    cbar1.ax.yaxis.label.set_color(text_color)
+    cbar1.ax.tick_params(colors=text_color)
+
+    quiv1 = ax1.quiver(
+        Xq,
+        Zq,
+        Uq0,
+        Vq0,
+        color="#0f172a",
+        scale=arrow_scale,
+        scale_units="xy",
+        width=0.003,
+    )
+    title1 = ax1.set_title(
+        f"Vorticité et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",
+        color=text_color,
+    )
+    ax1.set_xlabel("x", color=text_color)
+    ax1.set_ylabel("z", color=text_color)
+    ax1.tick_params(colors=text_color)
+
+    # --- Graphique 2 (en bas) : Température et Vitesse ---
+    ax2.set_facecolor(bg_color)
+    mesh2 = ax2.pcolormesh(
+        X_grid,
+        Z_grid,
+        Theta0,
+        shading="gouraud",
+        cmap="inferno",
+        vmin=theta_min,
+        vmax=theta_max,
+    )
+    cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
+    cbar2.ax.yaxis.label.set_color(text_color)
+    cbar2.ax.tick_params(colors=text_color)
+
+    quiv2 = ax2.quiver(
+        Xq,
+        Zq,
+        Uq0,
+        Vq0,
+        color="#f8fafc",
+        scale=arrow_scale,
+        scale_units="xy",
+        width=0.003,
+    )
+    title2 = ax2.set_title(
+        f"Température et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",
+        color=text_color,
+    )
+    ax2.set_xlabel("x", color=text_color)
+    ax2.set_ylabel("z", color=text_color)
+    ax2.tick_params(colors=text_color)
+
+    plt.tight_layout()
+
+    def update(frame_idx):
+        n = indices[frame_idx]
+        Xn, Yn, Zn = traj[n][0], traj[n][1], traj[n][2]
+
+        Vort_n = vort(X_grid, Z_grid, q, Xn)
+        Theta_n = temp(X_grid, Z_grid, q, Yn, Zn)
+        Uq_n = u(Xq, Zq, q, Xn)
+        Vq_n = v(Xq, Zq, q, Xn)
+
+        mesh1.set_array(Vort_n.ravel())
+        quiv1.set_UVC(Uq_n, Vq_n)
+        title1.set_text(f"Vorticité et Vitesse (n = {n}/{n_final}{suffix_r})")
+
+        mesh2.set_array(Theta_n.ravel())
+        quiv2.set_UVC(Uq_n, Vq_n)
+        title2.set_text(f"Température et Vitesse (n = {n}/{n_final}{suffix_r})")
+
+        return mesh1, quiv1, title1, mesh2, quiv2, title2
+
+    ani = animation.FuncAnimation(
+        fig, update, frames=len(indices), interval=interval, blit=False
+    )
+
+    if save_path:
+        ani.save(save_path, writer="pillow", fps=25, facecolor=bg_color)
+
+    plt.show()
+    return ani
+
+
+
 q = np.pi / 2
-instants = [45, 300, 1000 ]  # adapte selon la longueur de tes trajectoires
-
-traj_10 = integration(X0, Y0, Z0, 10)
-afficher_vorticite_instants(traj_10, instants, q, r=10)
-
 traj_28 = integration(X0, Y0, Z0, 28)
-afficher_vorticite_instants(traj_28, instants, q, r=28)
+traj_10=integration(X0, Y0, Z0, 10)
+ani_28 = animer_lorenz_rapide(traj_28, q=q, r=28, max_frames=250, interval=40)
+ani_10 = animer_lorenz_rapide(traj_10, q=q, r=10, max_frames=250, interval=40)
+
+
 
 
 
