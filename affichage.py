@@ -272,8 +272,6 @@ def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
 
 
 import matplotlib.animation as animation
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 def animer_lorenz_rapide(
