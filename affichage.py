@@ -6,77 +6,335 @@ from integration import *
 #on suppose X(t) = X0 constant
 #on définit ici les fonction u et v avec X0 constant
 
-def u(x,z,q, X0):
-    return X0*np.pi*np.sin(np.pi*z)*np.sin(q*x)
 
-def v(x,z,q,X0):
-    return X0*q*np.cos(np.pi*z)*np.cos(q*x)
+def u(x, z, q, X0):
+    return X0 * np.pi * np.sin(np.pi * z) * np.sin(q * x)
 
+def v(x, z, q, X0):
+    return X0 * q * np.cos(np.pi * z) * np.cos(q * x)
 
-#cherchons à afficher ce champ de vecteurs 
-X0=1 #on choisit une constante, on verra après comment la choisir
-Y0,Z0=1,1
-"""
-X=np.linspace(0,10,1)
-Z=np.linspace(0,10,1)
-"""
-def afficher_vort_et_vitesse(X,Z,U,V):
-    plt.figure()
-    plt.pcolormesh(X,Z,vort(X,Z,q,X0))
-    plt.quiver(X,Z,U,V)
-    
-    plt.show()
+def vort(x, z, q, X0):
+    return (np.pi**2 + q**2) * X0 * np.cos(np.pi * z) * np.sin(q * x)
 
-def afficher_theta_et_vitesse(X,Z,U,V):
-    plt.figure()
-    plt.pcolormesh(X,Z,temp(X,Z,q,Y0,Z0))   
-    plt.quiver(X,Z,U,V)
-    plt.show()
+def temp(x, z, q, Y, Z):
+    return Y * np.cos(np.pi * z) * np.cos(q * x) + Z * np.sin(2 * np.pi * z)
 
-def vort(x,z,q,X0):
-    return np.pi**2*X0*np.cos(np.pi*z)*np.sin(q*x)+q**2*X0*np.cos(np.pi*z)*np.sin(q*x)
+def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0, pas_q=6):
+    bg_color = "#171d26"
+    text_color = "#f1f5f9"
 
-def temp(x,z, q, Y, Z):
-    return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
-def papillons_r(valeurs_r):
-    T=[]
-    for r in valeurs_r:
-        T.append(integration(X0,Y0,Z0,r))
+    Xq, Zq = X[::pas_q, ::pas_q], Z[::pas_q, ::pas_q]
+    Uq, Vq = U[::pas_q, ::pas_q], V[::pas_q, ::pas_q]
+    max_speed = max(np.max(np.hypot(Uq, Vq)), 1e-6)
+    arrow_scale = max_speed * 7.5
 
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), facecolor=bg_color)
 
-    fig = plt.figure(figsize=(15, 5))
-    for i, r in enumerate(valeurs_r):
-    # Création du sous-graphique 3D
-        ax = fig.add_subplot(1, 3, i + 1, projection='3d')
-    
-    # Récupération de la trajectoire pour le r courant
-        traj = T[i]
-    
-    # Comme 'traj' est une liste de listes [ [X,Y,Z], [X,Y,Z], ... ], 
-    # on extrait chaque coordonnée avec une liste en compréhension :
-        x_vals = [point[0] for point in traj]
-        y_vals = [point[1] for point in traj]
-        z_vals = [point[2] for point in traj]
-    
-    # Tracé de la courbe
-        ax.plot(x_vals, y_vals, z_vals, label=f'r = {r}', color='blue', linewidth=0.6)
-    
-        ax.set_title(f'Système de Lorenz (r = {r})')
-        ax.set_xlabel('X')
-        ax.set_ylabel('Y')
-        ax.set_zlabel('Z')
-        ax.legend()
+    # --- Graphique 1 (en haut) : Vorticité et champ de vitesse ---
+    ax1.set_facecolor(bg_color)
+    mesh1 = ax1.pcolormesh(
+        X, Z, vort(X, Z, q, X0), shading="gouraud", cmap="coolwarm"
+    )
+    cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
+    cbar1.ax.yaxis.label.set_color(text_color)
+    cbar1.ax.tick_params(colors=text_color)
+
+    ax1.quiver(
+        Xq,
+        Zq,
+        Uq,
+        Vq,
+        color="#0f172a",
+        scale=arrow_scale,
+        scale_units="xy",
+        width=0.003,
+    )
+    ax1.set_title(f"Vorticité et champ de vitesse (X0 = {X0})", color=text_color)
+    ax1.set_xlabel("x", color=text_color)
+    ax1.set_ylabel("z", color=text_color)
+    ax1.tick_params(colors=text_color)
+
+    # --- Graphique 2 (en bas) : Température et champ de vitesse ---
+    ax2.set_facecolor(bg_color)
+    mesh2 = ax2.pcolormesh(
+        X, Z, temp(X, Z, q, Y0, Z0), shading="gouraud", cmap="inferno"
+    )
+    cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
+    cbar2.ax.yaxis.label.set_color(text_color)
+    cbar2.ax.tick_params(colors=text_color)
+
+    ax2.quiver(
+        Xq,
+        Zq,
+        Uq,
+        Vq,
+        color="#f8fafc",
+        scale=arrow_scale,
+        scale_units="xy",
+        width=0.003,
+    )
+    ax2.set_title(
+        f"Température et champ de vitesse (Y0 = {Y0}, Z0 = {Z0})", color=text_color
+    )
+    ax2.set_xlabel("x", color=text_color)
+    ax2.set_ylabel("z", color=text_color)
+    ax2.tick_params(colors=text_color)
 
     plt.tight_layout()
     plt.show()
 
 
-valeurs_r = [0.5, 18, 350]
+# --- Paramètres et grille ---
+X0, Y0, Z0 = 1, 1, 1
+q = np.pi / 2
+grid_length = 120
+grid_height = 120
+
+x_ = np.linspace(-2 * np.pi / q, 2 * np.pi / q, grid_length)
+z_ = np.linspace(-1 / 2, 1 / 2, grid_height)
+X, Z = np.meshgrid(x_, z_)
+U = u(X, Z, q, X0)
+V = v(X, Z, q, X0)
+
+#AFFICHAAAAAAAAAAAAGE##################################################
+#afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0)
+
+
+
+
+# --- Fonctions adaptées avec les valeurs à l'instant t ---
+#def u(x,z,q, X0):
+    #return X0*np.pi*np.sin(np.pi*z)*np.sin(q*x)
+
+def u(x, z, q, X_t):
+    return X_t * np.pi * np.sin(np.pi * z) * np.sin(q * x)
+
+def v(x, z, q, X_t):
+    return X_t * q * np.cos(np.pi * z) * np.cos(q * x)
+
+def vort(x, z, q, X_t):
+    return np.pi**2 * X_t * np.cos(np.pi * z) * np.sin(q * x) + q**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
+
+def temp(x, z, q, Y_t, Z_t):
+    return Y_t * np.cos(np.pi * z) * np.cos(q * x) + Z_t * np.sin(2 * np.pi * z)
+
+def afficher_physique_instant(traj, n, q, r=None):
+    bg_color = "#171d26"
+    text_color = "#f1f5f9"
+
+    # Récupération des valeurs de X, Y, Z à l'instant t_n
+    X_n = traj[n][0]
+    Y_n = traj[n][1]
+    Z_n = traj[n][2]
+
+    # Définition de l'espace physique (selon le sujet : x dans [-2*pi/q, 2*pi/q] et z dans [0, 1])
+    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 40)
+    z_vals = np.linspace(0, 1, 40)
+    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
+
+    # Calcul des champs sur la grille
+    U = u(X_grid, Z_grid, q, X_n)
+    V = v(X_grid, Z_grid, q, X_n)
+    Vort_grid = vort(X_grid, Z_grid, q, X_n)
+    Theta_grid = temp(X_grid, Z_grid, q, Y_n, Z_n)
+
+    suffix_r = f", r={r}" if r is not None else ""
+
+    fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), facecolor=bg_color)
+
+    # --- Graphique 1 : Vorticité et Champ de vitesse ---
+    ax1.set_facecolor(bg_color)
+    mesh1 = ax1.pcolormesh(X_grid, Z_grid, Vort_grid, shading="auto", cmap="coolwarm")
+    cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
+    cbar1.ax.yaxis.label.set_color(text_color)
+    cbar1.ax.tick_params(colors=text_color)
+
+    ax1.quiver(X_grid, Z_grid, U, V, color="black")
+    ax1.set_title(f"Vorticité et Vitesse (instant n={n}, r=28)", color=text_color)
+    ax1.set_xlabel("x", color=text_color)
+    ax1.set_ylabel("z", color=text_color)
+    ax1.tick_params(colors=text_color)
+
+    # --- Graphique 2 : Température et Champ de vitesse ---
+    ax2.set_facecolor(bg_color)
+    mesh2 = ax2.pcolormesh(X_grid, Z_grid, Theta_grid, shading="auto", cmap="inferno")
+    cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
+    cbar2.ax.yaxis.label.set_color(text_color)
+    cbar2.ax.tick_params(colors=text_color)
+
+    ax2.quiver(X_grid, Z_grid, U, V, color="white")
+    ax2.set_title(f"Température et Vitesse (instant n={n}, r=28)", color=text_color)
+    ax2.set_xlabel("x", color=text_color)
+    ax2.set_ylabel("z", color=text_color)
+    ax2.tick_params(colors=text_color)
+
+    plt.tight_layout()
+    plt.show()
+
+# 1. Récupérer une trajectoire (ex. avec ta fonction existante)
+traj = integration(X0, Y0, Z0, r)
+
+# 2. Choisir l'indice de l'instant n et le paramètre q
+n = 50  # doit vérifier : 0 <= n < len(traj)
+q = np.pi / 2  # exemple classique pour le modèle de Lorenz / convection
+
+# 3. Lancer l'affichage
+#afficher_physique_instant(traj, n, q)
+
+
+
+# Paramètre du nombre d'onde q donné dans le sujet
+
+
+# Condition initiale et paramètres
+X0, Y0, Z0 = 1.0, 1.0, 1.0
+
+# --- Cas r = 10 (Régime stable / stationnaire) ---
+print("Calcul pour r = 10...")
+traj_r10 = integration(X0, Y0, Z0, r=10)
+# On prend un instant vers la fin de la simulation (ex: le dernier point -1)
+#afficher_physique_instant(traj_r10, -1, q)
+
+# --- Cas r = 28 (Régime chaotique) ---
+print("Calcul pour r = 28...")
+traj_r28 = integration(X0, Y0, Z0, r=28)
+# En régime chaotique, les mouvements changent tout le temps, vous pouvez tester différents indices n (ex: 100, 500, -1)
+#afficher_physique_instant(traj_r28, -1, q)
+
+
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+
+def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
+    bg_color = "#171d26"
+    text_color = "#f1f5f9"
+    suffix_r = f", r={r}" if r is not None else ""
+
+    # Grille fine pour un rendu lisse
+    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 120)
+    z_vals = np.linspace(0, 1, 120)
+    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
+
+    # Grille espacée pour les flèches
+    Xq, Zq = X_grid[::pas_q, ::pas_q], Z_grid[::pas_q, ::pas_q]
+
+    # Calcul des champs pour les instants choisis
+    champs = []
+    for n in instants:
+        X_n = traj[n][0]
+        Vort_n = vort(X_grid, Z_grid, q, X_n)
+        Uq_n = u(Xq, Zq, q, X_n)
+        Vq_n = v(Xq, Zq, q, X_n)
+        champs.append((n, Vort_n, Uq_n, Vq_n))
+
+    # Échelle commune de vorticité et de flèches sur les 3 instants comparés
+    vmin = min(np.min(item[1]) for item in champs)
+    vmax = max(np.max(item[1]) for item in champs)
+    max_speed = max(max(np.max(np.hypot(item[2], item[3])), 1e-6) for item in champs)
+    arrow_scale = max_speed * 7.5
+
+    fig, axes = plt.subplots(1, len(instants), figsize=(18, 4.8), facecolor=bg_color)
+    if len(instants) == 1:
+        axes = [axes]
+
+    for ax, (n, Vort_n, Uq_n, Vq_n) in zip(axes, champs):
+        ax.set_facecolor(bg_color)
+        mesh = ax.pcolormesh(
+            X_grid, Z_grid, Vort_n, shading="gouraud", cmap="coolwarm", vmin=vmin, vmax=vmax
+        )
+        cbar = fig.colorbar(mesh, ax=ax, label="Vorticité")
+        cbar.ax.yaxis.label.set_color(text_color)
+        cbar.ax.tick_params(colors=text_color)
+
+        ax.quiver(
+            Xq,
+            Zq,
+            Uq_n,
+            Vq_n,
+            color="#0f172a",
+            scale=arrow_scale,
+            scale_units="xy",
+            width=0.003,
+        )
+
+        ax.set_title(f"Vorticité — instant n={n}{suffix_r}", color=text_color)
+        ax.set_xlabel("x", color=text_color)
+        ax.set_ylabel("z", color=text_color)
+        ax.tick_params(colors=text_color)
+
+    plt.tight_layout()
+    plt.show()
+
+
+# --- Exemple d'utilisation pour r = 10 puis r = 28 ---
+q = np.pi / 2
+instants = [45, 300, 1000 ]  # adapte selon la longueur de tes trajectoires
+
+traj_10 = integration(X0, Y0, Z0, 10)
+afficher_vorticite_instants(traj_10, instants, q, r=10)
+
+traj_28 = integration(X0, Y0, Z0, 28)
+afficher_vorticite_instants(traj_28, instants, q, r=28)
+
+
+
+
+def papillons_r(valeurs_r):
+    bg_color = "#171d26"
+    text_color = "#f1f5f9"
+    grid_color = "#334155"
+    couleurs = ["#5ec3ee", "#f472b6", "#894CCA"]
+
+    T = [integration(X0, Y0, Z0, r) for r in valeurs_r]
+
+    fig = plt.figure(figsize=(15, 5), facecolor=bg_color)
+
+    for i, r in enumerate(valeurs_r):
+        ax = fig.add_subplot(1, 3, i + 1, projection="3d", facecolor=bg_color)
+        couleur_courbe = couleurs[i % len(couleurs)]
+
+        # Fond des faces 3D et grilles adaptés au thème sombre
+        for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
+            axis.pane.set_facecolor(bg_color)
+            axis.pane.set_edgecolor(grid_color)
+            axis._axinfo["grid"]["color"] = grid_color
+            axis._axinfo["tick"]["color"] = text_color
+
+        traj = T[i]
+        x_vals = [point[0] for point in traj]
+        y_vals = [point[1] for point in traj]
+        z_vals = [point[2] for point in traj]
+
+        ax.plot(
+            x_vals,
+            y_vals,
+            z_vals,
+            label=f"r = {r}",
+            color=couleur_courbe,
+            linewidth=0.6,
+        )
+
+        ax.set_title(f"Système de Lorenz (r = {r})", color=text_color)
+        ax.set_xlabel("X", color=text_color)
+        ax.set_ylabel("Y", color=text_color)
+        ax.set_zlabel("Z", color=text_color)
+        ax.tick_params(colors=text_color)
+
+        leg = ax.legend(facecolor="#1e293b", edgecolor=grid_color)
+        for text in leg.get_texts():
+            text.set_color(text_color)
+
+    plt.tight_layout()
+    plt.show()
+
+
+valeurs_r = [1, 18, 28]
 
 #papillons_r(valeurs_r)
 
 r=28
-
 
 
 def papillons_CI_comparaison(CI_initiale, r, temps_court_max=30.0):
@@ -166,93 +424,6 @@ def papillons_CI_comparaison(CI_initiale, r, temps_court_max=30.0):
 
 
 
-
-
-# --- Fonctions adaptées avec les valeurs à l'instant t ---
-#def u(x,z,q, X0):
-    #return X0*np.pi*np.sin(np.pi*z)*np.sin(q*x)
-
-def u(x, z, q, X_t):
-    return X_t * np.pi * np.sin(np.pi * z) * np.sin(q * x)
-
-#def v(x,z,q,X0):
-    #return X0*q*np.cos(np.pi*z)*np.cos(q*x)
-
-def v(x, z, q, X_t):
-    return X_t * q * np.cos(np.pi * z) * np.cos(q * x)
-
-#def vort(x,z,q,X0):
-    #return np.pi**2*X0*np.cos(np.pi*z)*np.sin(q*x)+q**2*X0*np.cos(np.pi*z)*np.sin(q*x)
-
-def vort(x, z, q, X_t):
-    return np.pi**2 * X_t * np.cos(np.pi * z) * np.sin(q * x) + q**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
-
-#def temp(x,z, q, Y, Z):
-    #return Y*np.cos(np.pi*z)*np.cos(q*x)+Z*np.sin(2*np.pi*z)
-
-def temp(x, z, q, Y_t, Z_t):
-    return Y_t * np.cos(np.pi * z) * np.cos(q * x) + Z_t * np.sin(2 * np.pi * z)
-
-
-
-def afficher_physique_instant(traj, n, q):
-    # Récupération des valeurs de X, Y, Z à l'instant t_n
-    X_n = traj[n][0]
-    Y_n = traj[n][1]
-    Z_n = traj[n][2]
-    
-    # Définition de l'espace physique (selon le sujet : x dans [-2*pi/q, 2*pi/q] et z dans [0, 1])
-    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 40)
-    z_vals = np.linspace(0, 1, 40)
-    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
-    
-    # Calcul des champs sur la grille
-    U = u(X_grid, Z_grid, q, X_n)
-    V = v(X_grid, Z_grid, q, X_n)
-    Vort_grid = vort(X_grid, Z_grid, q, X_n)
-    Theta_grid = temp(X_grid, Z_grid, q, Y_n, Z_n)
-    
-    # --- Figure 1 : Vorticité et Champ de vitesse ---
-    plt.figure(figsize=(10, 4))
-    plt.pcolormesh(X_grid, Z_grid, Vort_grid, shading='auto', cmap='coolwarm')
-    plt.colorbar(label='Vorticité')
-    plt.quiver(X_grid, Z_grid, U, V, color='black')
-    plt.title(f"Vorticité et Vitesse (instant n={n})")
-    plt.xlabel('x')
-    plt.ylabel('z')
-    plt.tight_layout()
-    plt.show()
-    
-    # --- Figure 2 : Température et Champ de vitesse ---
-    plt.figure(figsize=(10, 4))
-    plt.pcolormesh(X_grid, Z_grid, Theta_grid, shading='auto', cmap='inferno')
-    plt.colorbar(label='Écart de température theta')
-    plt.quiver(X_grid, Z_grid, U, V, color='white')
-    plt.title(f"Température et Vitesse (instant n={n})")
-    plt.xlabel('x')
-    plt.ylabel('z')
-    plt.tight_layout()
-    plt.show()
-
-
-
-# Paramètre du nombre d'onde q donné dans le sujet
-
-
-# Condition initiale et paramètres
-X0, Y0, Z0 = 1.0, 1.0, 1.0
-
-# --- Cas r = 10 (Régime stable / stationnaire) ---
-print("Calcul pour r = 10...")
-traj_r10 = integration(X0, Y0, Z0, r=10)
-# On prend un instant vers la fin de la simulation (ex: le dernier point -1)
-#afficher_physique_instant(traj_r10, -1, q)
-
-# --- Cas r = 28 (Régime chaotique) ---
-print("Calcul pour r = 28...")
-traj_r28 = integration(X0, Y0, Z0, r=28)
-# En régime chaotique, les mouvements changent tout le temps, vous pouvez tester différents indices n (ex: 100, 500, -1)
-#afficher_physique_instant(traj_r28, -1, q)
 
 
 
@@ -360,4 +531,4 @@ def papillons_r_non_constant():
     plt.tight_layout()
     plt.show()
 
-papillons_r_non_constant()
+#papillons_r_non_constant()
