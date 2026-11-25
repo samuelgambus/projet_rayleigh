@@ -2,52 +2,22 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 
-try:
-    from constante import *
-except ImportError:
-    r = 28  # valeur par defaut si constante.py est introuvable
-
-try:
-    from integration import *
-except ImportError:
-    # integration.py introuvable -> petit RK4 de secours (sigma=10, b=8/3, dt=0.01)
-    def _lorenz(p, r, sigma=10.0, b=8.0 / 3.0):
-        x, y, z = p
-        return np.array([sigma * (y - x), r * x - y - x * z, x * y - b * z])
-
-    def _rk4(p, r, dt):
-        k1 = _lorenz(p, r)
-        k2 = _lorenz(p + dt / 2 * k1, r)
-        k3 = _lorenz(p + dt / 2 * k2, r)
-        k4 = _lorenz(p + dt * k3, r)
-        return p + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
-
-    def integration(X0, Y0, Z0, r, dt=0.01, N=5000):
-        traj = [np.array([X0, Y0, Z0], dtype=float)]
-        for _ in range(N):
-            traj.append(_rk4(traj[-1], r, dt))
-        return traj
-
-    def integration_r_increasing(X0, Y0, Z0, r_min=0.0, r_max=35.0, dt=0.01, N=5000):
-        traj = [np.array([X0, Y0, Z0], dtype=float)]
-        for i in range(N):
-            r_i = r_min + (r_max - r_min) * i / N
-            traj.append(_rk4(traj[-1], r_i, dt))
-        return traj
+from constante import *
+from integration import *
 
 # X(t) = X0 constant pour la 1ere partie
 # fonctions u, v, vort et temp (je les redefinis plus bas pour X(t))
 
-def u(x, z, q, X0):
+def u_cst(x, z, q, X0):
     return X0 * np.pi * np.sin(np.pi * z) * np.sin(q * x)
 
-def v(x, z, q, X_t):
+def v_cst(x, z, q, X_t):
     return X_t * q * np.cos(np.pi * z) * np.cos(q * x)
 
-def vort(x, z, q, X_t):
+def vort_cst(x, z, q, X_t):
     return np.pi**2 * X_t * np.cos(np.pi * z) * np.sin(q * x) + q**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
 
-def temp(x, z, q, Y_t, Z_t):
+def temp_cst(x, z, q, Y_t, Z_t):
     return Y_t * np.cos(np.pi * z) * np.cos(q * x) + Z_t * np.sin(2 * np.pi * z)
 
 
@@ -61,7 +31,7 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
 
     # graphe du haut : vorticité + vitesse
     ax1.set_facecolor(bg_color)
-    mesh1 = ax1.pcolormesh(X, Z, vort(X, Z, q, X0), shading="gouraud", cmap="coolwarm")
+    mesh1 = ax1.pcolormesh(X, Z, vort_cst(X, Z, q, X0), shading="gouraud", cmap="coolwarm")
     cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
     cbar1.ax.yaxis.label.set_color(text_color)
     cbar1.ax.tick_params(colors=text_color)
@@ -76,7 +46,7 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
 
     # graphe du bas : température + vitesse
     ax2.set_facecolor(bg_color)
-    mesh2 = ax2.pcolormesh(X, Z, temp(X, Z, q, Y0, Z0), shading="gouraud", cmap="inferno")
+    mesh2 = ax2.pcolormesh(X, Z, temp_cst(X, Z, q, Y0, Z0), shading="gouraud", cmap="inferno")
     cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
     cbar2.ax.yaxis.label.set_color(text_color)
     cbar2.ax.tick_params(colors=text_color)
@@ -100,8 +70,8 @@ grid_height = 120
 x_ = np.linspace(-2 * np.pi / q, 2 * np.pi / q, grid_length)
 z_ = np.linspace(0, 1, grid_height)
 X, Z = np.meshgrid(x_, z_)
-U = u(X, Z, q, X0)
-V = v(X, Z, q, X0)
+U = u_cst(X, Z, q, X0)
+V = v_cst(X, Z, q, X0)
 
 #AFFICHAAAAAAAAAAAAGE##################################################
 afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0)
@@ -370,10 +340,10 @@ def papillons_r(valeurs_r):
 
         # theme sombre pour les faces 3D
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
-            axis.pane.set_facecolor(bg_color)
-            axis.pane.set_edgecolor(grid_color)
-            axis._axinfo["grid"]["color"] = grid_color
-            axis._axinfo["tick"]["color"] = text_color
+            axis.pane.set_facecolor(bg_color)#type:ignore
+            axis.pane.set_edgecolor(grid_color)#type:ignore
+            axis._axinfo["grid"]["color"] = grid_color#type:ignore
+            axis._axinfo["tick"]["color"] = text_color#type:ignore
 
         traj = T[i]
         x_vals = [point[0] for point in traj]
@@ -445,7 +415,7 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
 
 
 # (1ere version de la comparaison, la 2eme juste en dessous la remplace)
-def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_size=1.2):
+def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_size=1.2):#type:ignore
     bg_color = "#171d26"
     panel_color = "#1e2632"
     text_color = "#f1f5f9"
@@ -472,12 +442,12 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     ax1 = fig.add_subplot(1, 2, 1, projection="3d")
     ax1.set_facecolor(bg_color)
 
-    scatter1 = ax1.scatter(x_inc, y_inc, z_inc, c=color_metric, cmap="plasma", s=point_size,
+    scatter1 = ax1.scatter(x_inc, y_inc, z_inc, c=color_metric, cmap="plasma", s=point_size, #type:ignore
                            alpha=0.88, edgecolors="none", depthshade=True)
 
-    ax1.scatter([x_inc[0]], [y_inc[0]], [z_inc[0]], color="#38bdf8", s=45,
+    ax1.scatter([x_inc[0]], [y_inc[0]], [z_inc[0]], color="#38bdf8", s=45, #type:ignore
                 edgecolors="#f8fafc", linewidths=0.8, label="Début")
-    ax1.scatter([x_inc[-1]], [y_inc[-1]], [z_inc[-1]], color="#fb7185", s=55,
+    ax1.scatter([x_inc[-1]], [y_inc[-1]], [z_inc[-1]], color="#fb7185", s=55,#type:ignore
                 edgecolors="#f8fafc", linewidths=0.8, label="Fin")
 
     ax1.set_axis_off()
@@ -505,12 +475,12 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     ax2 = fig.add_subplot(1, 2, 2, projection="3d")
     ax2.set_facecolor(bg_color)
 
-    scatter2 = ax2.scatter(x_28, y_28, z_28, c=prog_28, cmap="viridis", s=point_size,
+    scatter2 = ax2.scatter(x_28, y_28, z_28, c=prog_28, cmap="viridis", s=point_size,#type:ignore
                            alpha=0.88, edgecolors="none", depthshade=True)
 
-    ax2.scatter([x_28[0]], [y_28[0]], [z_28[0]], color="#38bdf8", s=45,
+    ax2.scatter([x_28[0]], [y_28[0]], [z_28[0]], color="#38bdf8", s=45,#type:ignore
                 edgecolors="#f8fafc", linewidths=0.8, label="Début")
-    ax2.scatter([x_28[-1]], [y_28[-1]], [z_28[-1]], color="#fb7185", s=55,
+    ax2.scatter([x_28[-1]], [y_28[-1]], [z_28[-1]], color="#fb7185", s=55,#type:ignore
                 edgecolors="#f8fafc", linewidths=0.8, label="Fin")
 
     ax2.set_axis_off()
@@ -602,13 +572,13 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     ax2 = fig.add_subplot(1, 2, 2, projection="3d")
     ax2.set_facecolor(bg_color)
 
-    ax2.scatter(x_28, y_28, z_28, color=couleur_r28, s=point_size_28,
+    ax2.scatter(x_28, y_28, z_28, color=couleur_r28, s=point_size_28,#type:ignore
                 alpha=0.85, edgecolors="none", depthshade=True)
 
     # on met juste le début et la fin en évidence
-    ax2.scatter([x_28[0]], [y_28[0]], [z_28[0]], color="#38bdf8", s=55,
+    ax2.scatter([x_28[0]], [y_28[0]], [z_28[0]], color="#38bdf8", s=55,#type:ignore
                 edgecolors="#f8fafc", linewidths=0.9, label="État initial")
-    ax2.scatter([x_28[-1]], [y_28[-1]], [z_28[-1]], color="#fb7185", s=65,
+    ax2.scatter([x_28[-1]], [y_28[-1]], [z_28[-1]], color="#fb7185", s=65,#type:ignore
                 edgecolors="#f8fafc", linewidths=0.9, label="État final")
 
     ax2.set_axis_off()
