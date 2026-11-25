@@ -36,7 +36,7 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
     cbar1.ax.tick_params(colors=text_color)
 
     # Xq, Zq, Uq, Vq et arrow_scale viennent de l'autre fichier normalement
-    ax1.quiver(Xq, Zq, Uq, Vq, color="#0f172a", scale=arrow_scale, scale_units="xy", width=0.003)
+    ax1.quiver(X, Z, U, V, color="#0f172a", scale_units="xy", width=0.003)
     ax1.set_title(f"Vorticité et champ de vitesse (X0 = {X0})", color=text_color)
     ax1.set_xlabel("x", color=text_color)
     ax1.set_ylabel("z", color=text_color)
@@ -49,7 +49,7 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
     cbar2.ax.yaxis.label.set_color(text_color)
     cbar2.ax.tick_params(colors=text_color)
 
-    ax2.quiver(Xq, Zq, Uq, Vq, color="#f8fafc", scale=arrow_scale, scale_units="xy", width=0.003)
+    ax2.quiver(X, Z, U, V, color="#f8fafc", scale_units="xy", width=0.003)
     ax2.set_title(f"Température et champ de vitesse (Y0 = {Y0}, Z0 = {Z0})", color=text_color)
     ax2.set_xlabel("x", color=text_color)
     ax2.set_ylabel("z", color=text_color)
