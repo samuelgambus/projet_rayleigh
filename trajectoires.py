@@ -12,11 +12,11 @@ def euler(x0,y0,X):
 
     plt.plot(x,z)
     plt.show()
-"""
+
 X = np.array(integration(1,1,1,10))[:,0]
 euler(1,0,X)
-Ca marche pas ya un carré c pas physique
-"""
+#Ca marche pas ya un carré c pas physique
+
 
 def g(x,z,i,X):
     if i.is_integer():

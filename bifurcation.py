@@ -11,8 +11,7 @@ def bifurcation_stable(N=50, comp=0):
     fig, ax = plt.subplots(figsize=(12, 5), facecolor=fond)
     ax.set_facecolor(fond)
 
-    for X0, couleur, label in [(1, 'tab:blue', 'CI : X0 = +1'),
-                               (-1, 'tab:red', 'CI : X0 = -1')]:
+    for X0, couleur, label in [(1, 'tab:blue', 'CI : X0 = +1'),(-1, 'tab:red', 'CI : X0 = -1')]:
         R, V = [], []
         for r in rs:
             T = np.array(integration(X0, 0, 0, r))   # shape (Nt+1, 3)

@@ -272,12 +272,7 @@ def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
     plt.show()
 
 
-
-import matplotlib.animation as animation
-
-
-def animer_lorenz_rapide(traj, q, r=28, max_frames=250, pas_q=6, interval=40, save_path=None):
-
+def animer_lorenz_rapide(traj, q, r=28, max_frames=20, pas_q=6, interval=40, save_path=None):
     bg_color = "#171d26"
     text_color = "#f1f5f9"
     suffix_r = f", r={r}" if r is not None else ""
@@ -324,10 +319,13 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=250, pas_q=6, interval=40, sa
     # --- Graphique 1 (en haut) : Vorticité et Vitesse ---
     ax1.set_facecolor(bg_color)
     mesh1 = ax1.pcolormesh(X_grid,Z_grid,Vort0,shading="gouraud",cmap="coolwarm",vmin=vort_min,vmax=vort_max,)
+    mesh1 = ax1.pcolormesh(X_grid,Z_grid,Vort0,shading="gouraud",cmap="coolwarm",vmin=vort_min,vmax=vort_max,)
     cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
     cbar1.ax.yaxis.label.set_color(text_color)
     cbar1.ax.tick_params(colors=text_color)
 
+    quiv1 = ax1.quiver(Xq,Zq,Uq0,Vq0,color="#0f172a",scale=arrow_scale,scale_units="xy",width=0.003,)
+    title1 = ax1.set_title(f"Vorticité et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",color=text_color,)
     quiv1 = ax1.quiver(Xq,Zq,Uq0,Vq0,color="#0f172a",scale=arrow_scale,scale_units="xy",width=0.003,)
     title1 = ax1.set_title(f"Vorticité et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",color=text_color,)
     ax1.set_xlabel("x", color=text_color)
@@ -336,13 +334,16 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=250, pas_q=6, interval=40, sa
 
     # --- Graphique 2 (en bas) : Température et Vitesse ---
     ax2.set_facecolor(bg_color)
-    mesh2 = ax2.pcolormesh(X_grid,Z_grid,Theta0,shading="gouraud",cmap="inferno",vmin=theta_min,vmax=theta_max,)
+    mesh2 = ax2.pcolormesh(X_grid,Z_grid,Theta0,shading="gouraud",cmap="inferno",vmin=theta_min,vmax=theta_max)
     cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
     cbar2.ax.yaxis.label.set_color(text_color)
     cbar2.ax.tick_params(colors=text_color)
 
     quiv2 = ax2.quiver(Xq,Zq,Uq0,Vq0,color="#f8fafc",scale=arrow_scale,scale_units="xy",width=0.003,)
-    title2 = ax2.set_title(f"Température et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",color=text_color,)
+    title2 = ax2.set_title(
+        f"Température et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",
+        color=text_color,
+    )
     ax2.set_xlabel("x", color=text_color)
     ax2.set_ylabel("z", color=text_color)
     ax2.tick_params(colors=text_color)
@@ -368,7 +369,7 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=250, pas_q=6, interval=40, sa
 
         return mesh1, quiv1, title1, mesh2, quiv2, title2
 
-    ani = animation.FuncAnimation(fig, update, frames=len(indices), interval=interval, blit=False)
+    ani = animation.FuncAnimation(fig, update, max_frames, interval=interval, blit=False)
 
     if save_path:ani.save(save_path,writer="pillow",fps=25,dpi=120,savefig_kwargs={"facecolor": bg_color},)
     
@@ -436,551 +437,6 @@ def papillons_r(valeurs_r):
     plt.show()
 
 
-valeurs_r = [1, 18, 28]
-
-#papillons_r(valeurs_r)
-
-r=28
-
-
-def papillons_CI_comparaison(CI_initiale, r, temps_court_max=30.0):
-    # Nombre de pas de temps pour la vue courte
-    Nt_court = int(temps_court_max / h)
-    temps_court = np.arange(Nt_court + 1) * h
-    
-    # 1. Calcul de la trajectoire de référence (sans perturbation)
-    traj_ref = integration(CI_initiale[0], CI_initiale[1], CI_initiale[2], r)
-    
-    fig = plt.figure(figsize=(16, 10))
-    noms = {0: 'X', 1: 'Y', 2: 'Z'}
-    
-    # Limite pour la référence sur le temps court
-    limite_3d_ref = min(Nt_court + 1, len(traj_ref))
-    x_ref_3d = [traj_ref[k][0] for k in range(limite_3d_ref)]
-    y_ref_3d = [traj_ref[k][1] for k in range(limite_3d_ref)]
-    z_ref_3d = [traj_ref[k][2] for k in range(limite_3d_ref)]
-    
-    for i in range(3):
-        # Création d'une copie stricte et perturbation UNIQUE de la i-ème variable
-        CI_pert = list(CI_initiale)
-        CI_pert[i] += 1e-3  # Ajout de 10^-3 exactement sur la variable i
-        
-        # Calcul de la trajectoire perturbée
-        traj_pert = integration(CI_pert[0], CI_pert[1], CI_pert[2], r)
-        
-        # --- LIGNE DU HAUT : 3D (Référence vs Perturbé sur le temps court) ---
-        ax_3d = fig.add_subplot(2, 3, i + 1, projection='3d')
-        
-        limite_3d_pert = min(Nt_court + 1, len(traj_pert))
-        x_p = [traj_pert[k][0] for k in range(limite_3d_pert)]
-        y_p = [traj_pert[k][1] for k in range(limite_3d_pert)]
-        z_p = [traj_pert[k][2] for k in range(limite_3d_pert)]
-        
-        # Tracé de la trajectoire de référence en 3D (ex: en gris/noir pointillé ou fin)
-        ax_3d.plot(x_ref_3d, y_ref_3d, z_ref_3d, color='blue', linestyle='--', linewidth=0.4, label='réf')
-        # Tracé de la trajectoire perturbée en 3D (en rouge ou bleu)
-        ax_3d.plot(x_p, y_p, z_p, color='red', linewidth=0.5, alpha=0.8, label='perturbé')
-        
-        ax_3d.set_title(f'Espace des phases 3D\n(Perturbation sur {noms[i]})')
-        ax_3d.set_xlabel('X')
-        ax_3d.set_ylabel('Y')
-        ax_3d.set_zlabel('Z')
-        ax_3d.legend()
-        
-        # --- LIGNE DU BAS : Comparaison Référence vs Perturbé (Temps court) ---
-        ax_2d = fig.add_subplot(2, 3, i + 4)
-        
-        # Extraction de la variable i sur le temps court
-        var_ref = [traj_ref[k][i] for k in range(min(Nt_court + 1, len(traj_ref)))]
-        var_pert = [traj_pert[k][i] for k in range(min(Nt_court + 1, len(traj_pert)))]
-        t_reel = temps_court[:len(var_ref)]
-        
-        # Tracé avec des styles bien distincts pour les distinguer
-        ax_2d.plot(t_reel, var_ref, color='blue', linestyle='--', linewidth=1.5, label=f'{noms[i]} (réf)')
-        ax_2d.plot(t_reel, var_pert, color='red', linestyle='-', linewidth=1.0, alpha=0.8, label=f'{noms[i]} (perturbé)')
-        
-        ax_2d.set_title(f'Divergence de {noms[i]} (0 à {temps_court_max}s)')
-        ax_2d.set_xlabel('Temps t')
-        ax_2d.set_ylabel(noms[i])
-        ax_2d.legend()
-
-    plt.tight_layout()
-    plt.show()
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-def papillons_CI_comparaison(CI_initiale, r, temps_court_max=30.0):
-    bg_color = "#171d26"
-    panel_color = "#1e2632"
-    text_color = "#f1f5f9"
-    grid_color = "#334155"
-
-    # Couleurs contrastées pour distinguer référence et perturbation sur fond sombre
-    ref_color = "#38bdf8"  # bleu ciel lumineux (pointillé)
-    pert_colors = ["#fb7185", "#fbbf24", "#34d399"]  # corail, ambre, émeraude selon i
-
-    # Nombre de pas de temps pour la vue courte
-    Nt_court = int(temps_court_max / h)
-    temps_court = np.arange(Nt_court + 1) * h
-
-    # 1. Calcul de la trajectoire de référence (sans perturbation)
-    traj_ref = integration(CI_initiale[0], CI_initiale[1], CI_initiale[2], r)
-
-    fig = plt.figure(figsize=(16, 10), facecolor=bg_color)
-    noms = {0: "X", 1: "Y", 2: "Z"}
-
-    # Limite pour la référence sur le temps court
-    limite_3d_ref = min(Nt_court + 1, len(traj_ref))
-    x_ref_3d = [traj_ref[k][0] for k in range(limite_3d_ref)]
-    y_ref_3d = [traj_ref[k][1] for k in range(limite_3d_ref)]
-    z_ref_3d = [traj_ref[k][2] for k in range(limite_3d_ref)]
-
-    for i in range(3):
-        pert_color = pert_colors[i]
-
-        # Copie et perturbation UNIQUE de la i-ème variable
-        CI_pert = list(CI_initiale)
-        CI_pert[i] += 1e-3
-
-        # Calcul de la trajectoire perturbée
-        traj_pert = integration(CI_pert[0], CI_pert[1], CI_pert[2], r)
-
-        # LIGNE DU HAUT : 3D (Référence vs Perturbé sur le temps court)
-        ax_3d = fig.add_subplot(2, 3, i + 1, projection="3d")
-        ax_3d.set_facecolor(bg_color)
-        for axis in (ax_3d.xaxis, ax_3d.yaxis, ax_3d.zaxis):
-            axis.pane.set_facecolor(panel_color)
-            axis.pane.set_edgecolor(grid_color)
-            axis.pane.set_alpha(0.35)
-            axis._axinfo["grid"]["color"] = grid_color
-            axis._axinfo["grid"]["linewidth"] = 0.6
-
-        limite_3d_pert = min(Nt_court + 1, len(traj_pert))
-        x_p = [traj_pert[k][0] for k in range(limite_3d_pert)]
-        y_p = [traj_pert[k][1] for k in range(limite_3d_pert)]
-        z_p = [traj_pert[k][2] for k in range(limite_3d_pert)]
-
-        ax_3d.plot(
-            x_ref_3d,
-            y_ref_3d,
-            z_ref_3d,
-            color=ref_color,
-            linestyle="--",
-            linewidth=0.9,
-            alpha=0.85,
-            label="réf",
-        )
-        ax_3d.plot(
-            x_p,
-            y_p,
-            z_p,
-            color=pert_color,
-            linestyle="-",
-            linewidth=1.1,
-            alpha=0.92,
-            label=f"perturbé (+1e-3 sur {noms[i]})",
-        )
-
-        ax_3d.set_title(
-            f"Espace des phases 3D\n(Perturbation sur {noms[i]}, r={r})",
-            color=text_color,
-        )
-        ax_3d.set_xlabel("X", color=text_color)
-        ax_3d.set_ylabel("Y", color=text_color)
-        ax_3d.set_zlabel("Z", color=text_color)
-        ax_3d.tick_params(colors=text_color)
-
-        leg_3d = ax_3d.legend(facecolor=panel_color, edgecolor=grid_color)
-        for text in leg_3d.get_texts():
-            text.set_color(text_color)
-
-        # LIGNE DU BAS : Comparaison Référence vs Perturbé (Temps court)
-        ax_2d = fig.add_subplot(2, 3, i + 4)
-        ax_2d.set_facecolor(panel_color)
-        ax_2d.grid(True, color=grid_color, linestyle=":", linewidth=0.6, alpha=0.7)
-        for spine in ax_2d.spines.values():
-            spine.set_color(grid_color)
-
-        var_ref = [traj_ref[k][i] for k in range(min(Nt_court + 1, len(traj_ref)))]
-        var_pert = [traj_pert[k][i] for k in range(min(Nt_court + 1, len(traj_pert)))]
-        t_reel = temps_court[: len(var_ref)]
-
-        ax_2d.plot(
-            t_reel,
-            var_ref,
-            color=ref_color,
-            linestyle="--",
-            linewidth=1.6,
-            label=f"{noms[i]} (réf)",
-        )
-        ax_2d.plot(
-            t_reel,
-            var_pert,
-            color=pert_color,
-            linestyle="-",
-            linewidth=1.3,
-            alpha=0.95,
-            label=f"{noms[i]} (perturbé)",
-        )
-
-        ax_2d.set_title(
-            f"Divergence de {noms[i]} (0 à {temps_court_max}s)",
-            color=text_color,
-        )
-        ax_2d.set_xlabel("Temps t", color=text_color)
-        ax_2d.set_ylabel(noms[i], color=text_color)
-        ax_2d.tick_params(colors=text_color)
-
-        leg_2d = ax_2d.legend(facecolor=bg_color, edgecolor=grid_color)
-        for text in leg_2d.get_texts():
-            text.set_color(text_color)
-
-    plt.tight_layout()
-    plt.show()
-
-
-
-
-#papillons_CI_comparaison([X0,Y0,Z0],r)
-
-
-#REMARQUE ANALYSE: on remarque que perturbé ou non, c'est les memes trajectoires
-#genre l'idée c'est que en régime chaotioque, dans tous les cas il vont explorer
-#toutes les possibilités, donc la perturbation n'a pas tant d'impact
-#en d'ailleurs si on teste avec r=18, ie pas de chaos, ça bifurque pas
-#prcq 10e3 ça se voit pas quoi
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-from constante import *
-from integration import *
-
-def comparer_r10_r28_instants(indices=[50, 200, 500]):
-    q = np.pi / np.sqrt(2)
-    X0, Y0, Z0 = 1.0, 1.0, 1.0
-    
-    # 1. Calcul des trajectoires pour r = 10 et r = 28
-    print("Calcul des trajectoires...")
-    traj_r10 = integration(X0, Y0, Z0, r=10)
-    traj_r28 = integration(X0, Y0, Z0, r=28)
-    
-    # 2. Définition de la grille spatiale (x et z)
-    x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 30)
-    z_vals = np.linspace(0, 1, 30)
-    X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
-    
-    # 3. Création de la figure 2x3
-    fig, axes = plt.subplots(2, 3, figsize=(16, 9))
-    
-    # --- LIGNE DU HAUT : r = 10 à 3 instants différents ---
-    for j, n in enumerate(indices):
-        X_n = traj_r10[n][0]
-        
-        # Calcul des champs
-        Vort_grid = vort(X_grid, Z_grid, q, X_n)
-        U = u(X_grid, Z_grid, q, X_n)
-        V = v(X_grid, Z_grid, q, X_n)
-        
-        ax = axes[0, j]
-        im = ax.pcolormesh(X_grid, Z_grid, Vort_grid, shading='auto', cmap='coolwarm')
-        ax.quiver(X_grid, Z_grid, U, V, color='black', scale=400)
-        ax.set_title(f"r = 10 (instant t_n, n={n})")
-        ax.set_xlabel('x')
-        ax.set_ylabel('z')
-
-    # --- LIGNE DU BAS : r = 28 à 3 instants différents ---
-    for j, n in enumerate(indices):
-        X_n = traj_r28[n][0]
-        
-        # Calcul des champs
-        Vort_grid = vort(X_grid, Z_grid, q, X_n)
-        U = u(X_grid, Z_grid, q, X_n)
-        V = v(X_grid, Z_grid, q, X_n)
-        
-        ax = axes[1, j]
-        im = ax.pcolormesh(X_grid, Z_grid, Vort_grid, shading='auto', cmap='coolwarm')
-        ax.quiver(X_grid, Z_grid, U, V, color='black', scale=400)
-        ax.set_title(f"r = 28 (chaos, n={n})")
-        ax.set_xlabel('x')
-        ax.set_ylabel('z')
-
-    plt.tight_layout()
-    plt.show()
-
-#comparer_r10_r28_instants(indices=[50, 300, 900])
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-def papillons_r_non_constant():
-    # 1. Utiliser un thème sombre pour faire ressortir les couleurs
-    plt.style.use('dark_background')
-    
-    fig = plt.figure(figsize=(10, 10))
-    # 2. Utiliser 1, 1, 1 pour centrer l'unique graphique
-    ax = fig.add_subplot(1, 1, 1, projection='3d')
-        
-    # Récupération de la trajectoire
-    traj = integration_r_increasing(X0, Y0, Z0)
-
-    # Conversion en tableau NumPy pour une manipulation plus performante
-    traj_np = np.array(traj)
-    x_vals = traj_np[:, 0]
-    y_vals = traj_np[:, 1]
-    z_vals = traj_np[:, 2]
-
-    # 3. Créer un dégradé de couleur basé sur le temps (l'index)
-    temps = np.linspace(0, 1, len(x_vals))
-
-    # Tracé avec scatter pour bénéficier du dégradé (cmap)
-    # s=0.5 gère la taille des points, alpha la transparence
-    scatter = ax.scatter(x_vals, y_vals, z_vals, #type:ignore
-                         c=temps, cmap='magma', 
-                         s=0.5, alpha=0.8, edgecolor='none') #type:ignore
-
-    # 4. Esthétique : suppression des axes et de la grille pour un effet "flottant"
-    ax.set_axis_off()
-    
-    ax.set_title('Système de Lorenz (r augmentant)', color='white', fontsize=14, pad=20)
-    
-    # Ajout d'une barre de couleur pour indiquer l'écoulement du temps
-    cbar = plt.colorbar(scatter, ax=ax, shrink=0.5, pad=0.05)
-    cbar.set_label('Évolution du temps', color='white')
-    cbar.ax.yaxis.set_tick_params(color='white')
-    plt.setp(plt.getp(cbar.ax.axes, 'yticklabels'), color='white')
-
-    plt.tight_layout()
-    plt.show()
-
-#papillons_r_non_constant()
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-def papillons_r_non_constant(X0, Y0, Z0, max_points=15000):
-    bg_color = "#171d26"
-    text_color = "#f1f5f9"
-
-    fig = plt.figure(figsize=(10.5, 10), facecolor=bg_color)
-    ax = fig.add_subplot(1, 1, 1, projection="3d")
-    ax.set_facecolor(bg_color)
-
-    # Récupération et conversion de la trajectoire
-    traj = integration_r_increasing(X0, Y0, Z0)
-    traj_np = np.asarray(traj, dtype=float)
-
-    # Sous-échantillonnage léger si la trajectoire est très longue pour garder des points nets et rapides
-    if len(traj_np) > max_points:
-        idx = np.linspace(0, len(traj_np) - 1, max_points, dtype=int)
-        traj_np = traj_np[idx]
-    else:
-        idx = np.arange(len(traj_np))
-
-    x_vals = traj_np[:, 0]
-    y_vals = traj_np[:, 1]
-    z_vals = traj_np[:, 2]
-
-    # Progression normalisée de 0 (début) à 1 (fin)
-    progression = np.linspace(0.0, 1.0, len(x_vals))
-
-    # Fin filigrane très discret pour relier les points et montrer le sens de la trajectoire
-    ax.plot(
-        x_vals,
-        y_vals,
-        z_vals,
-        color="#94a3b8",
-        linewidth=0.45,
-        alpha=0.22,
-    )
-
-    # Points plus visibles avec taille progressive (début -> fin) et colormap 'plasma'
-    sizes = np.linspace(2.5, 8.5, len(x_vals))
-    scatter = ax.scatter(
-        x_vals,
-        y_vals,
-        z_vals,
-        c=progression,
-        cmap="plasma",
-        s=sizes,
-        alpha=0.88,
-        edgecolors="none",
-        depthshade=True,
-    )
-
-    # Repères discrets pour l'instant initial et l'instant final
-    ax.scatter(
-        [x_vals[0]],
-        [y_vals[0]],
-        [z_vals[0]],
-        color="#38bdf8",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Début (t = 0)",
-    )
-    ax.scatter(
-        [x_vals[-1]],
-        [y_vals[-1]],
-        [z_vals[-1]],
-        color="#fb7185",
-        s=65,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Fin",
-    )
-
-    ax.set_axis_off()
-    ax.set_title(
-        "Système de Lorenz avec r croissant (évolution temporelle)",
-        color=text_color,
-        fontsize=14,
-        pad=18,
-    )
-
-    leg = ax.legend(
-        loc="upper left",
-        facecolor="#1e2632",
-        edgecolor="#334155",
-        fontsize=10,
-    )
-    for txt in leg.get_texts():
-        txt.set_color(text_color)
-
-    cbar = fig.colorbar(scatter, ax=ax, shrink=0.55, pad=0.04)
-    cbar.set_label("Progression temporelle (0 → 1)", color=text_color, fontsize=11)
-    cbar.ax.yaxis.set_tick_params(color=text_color, labelcolor=text_color)
-    cbar.outline.set_edgecolor("#334155")
-
-    plt.tight_layout()
-    plt.show()
-
-import matplotlib.pyplot as plt
-import numpy as np
-from mpl_toolkits.mplot3d.art3d import Line3DCollection
-
-import matplotlib.cm as cm
-import matplotlib.colors as mcolors
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-def papillons_r_non_constant(X0, Y0, Z0, step=2, nb_troncons=80):
-    bg_color = "#171d26"
-    text_color = "#f1f5f9"
-
-    fig = plt.figure(figsize=(10.5, 10), facecolor=bg_color)
-    ax = fig.add_subplot(1, 1, 1, projection="3d")
-    ax.set_facecolor(bg_color)
-
-    # Récupération de la trajectoire à haute précision
-    traj = integration_r_increasing(X0, Y0, Z0)
-    traj_np = np.asarray(traj, dtype=float)[::step]
-
-    x_vals = traj_np[:, 0]
-    y_vals = traj_np[:, 1]
-    z_vals = traj_np[:, 2]
-    n_pts = len(x_vals)
-
-    cmap = plt.get_cmap("plasma")
-    norm = mcolors.Normalize(vmin=0.0, vmax=1.0)
-
-    # Découpage en tronçons qui se chevauchent d'1 point pour une courbe continue et lisse
-    bornes = np.linspace(0, n_pts - 1, nb_troncons + 1, dtype=int)
-    for i in range(nb_troncons):
-        i0, i1 = bornes[i], bornes[i + 1] + 1
-        if i1 - i0 < 2:
-            continue
-        t_mid = (i + 0.5) / nb_troncons
-        ax.plot(
-            x_vals[i0:i1],
-            y_vals[i0:i1],
-            z_vals[i0:i1],
-            color=cmap(norm(t_mid)),
-            linewidth=1.05,
-            alpha=0.92,
-        )
-
-    # Repères discrets pour le début et la fin
-    ax.scatter(
-        [x_vals[0]],
-        [y_vals[0]],
-        [z_vals[0]],
-        color="#38bdf8",
-        s=45,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Début",
-    )
-    ax.scatter(
-        [x_vals[-1]],
-        [y_vals[-1]],
-        [z_vals[-1]],
-        color="#fb7185",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Fin",
-    )
-
-    ax.set_axis_off()
-    ax.set_title(
-        "Système de Lorenz avec r croissant (évolution temporelle)",
-        color=text_color,
-        fontsize=14,
-        pad=18,
-    )
-
-    leg = ax.legend(
-        loc="upper left",
-        facecolor="#1e2632",
-        edgecolor="#334155",
-        fontsize=10,
-    )
-    for txt in leg.get_texts():
-        txt.set_color(text_color)
-
-    sm = cm.ScalarMappable(cmap=cmap, norm=norm)
-    sm.set_array([])
-    cbar = fig.colorbar(sm, ax=ax, shrink=0.55, pad=0.04)
-    cbar.set_label("Progression temporelle (0 → 1)", color=text_color, fontsize=11)
-    cbar.ax.yaxis.set_tick_params(color=text_color, labelcolor=text_color)
-    cbar.outline.set_edgecolor("#334155")
-
-    plt.tight_layout()
-    plt.show()
-
-papillons_r_non_constant(X0, Y0, Z0)
-
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-
 def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
     bg_color = "#171d26"
     text_color = "#f1f5f9"
@@ -1004,10 +460,10 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
     scatter = ax.scatter(
         x_vals,
         y_vals,
-        z_vals,
+        z_vals,#type:ignore
         c=progression,
         cmap="plasma",
-        s=point_size,
+        s=point_size, #type:ignore
         alpha=0.85,
         edgecolors="none",
         depthshade=True,
@@ -1017,7 +473,7 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
     ax.scatter(
         [x_vals[0]],
         [y_vals[0]],
-        [z_vals[0]],
+        [z_vals[0]], #type:ignore
         color="#38bdf8",
         s=45,
         edgecolors="#f8fafc",
@@ -1027,7 +483,7 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
     ax.scatter(
         [x_vals[-1]],
         [y_vals[-1]],
-        [z_vals[-1]],
+        [z_vals[-1]],#type:ignore
         color="#fb7185",
         s=55,
         edgecolors="#f8fafc",
@@ -1294,10 +750,10 @@ def papillons_r_comparaison(
     scatter1 = ax1.scatter(
         x_inc,
         y_inc,
-        z_inc,
+        z_inc,#type:ignore
         c=color_metric,
         cmap=cmap,
-        s=point_size,
+        s=point_size,#type:ignore
         alpha=0.88,
         edgecolors="none",
         depthshade=True,
@@ -1306,7 +762,7 @@ def papillons_r_comparaison(
     ax1.scatter(
         [x_inc[0]],
         [y_inc[0]],
-        [z_inc[0]],
+        [z_inc[0]], #type:ignore
         color="#38bdf8",
         s=55,
         edgecolors="#f8fafc",
@@ -1316,7 +772,7 @@ def papillons_r_comparaison(
     ax1.scatter(
         [x_inc[-1]],
         [y_inc[-1]],
-        [z_inc[-1]],
+        [z_inc[-1]], #type:ignore
         color="#fb7185",
         s=65,
         edgecolors="#f8fafc",
@@ -1421,6 +877,60 @@ def papillons_r_comparaison(
     plt.tight_layout()
     plt.show()
 
-#papillons_r_comparaison(X0, Y0, Z0, r_min=0, r_max=35, step=2, point_size=1.2)
 
+# =============================================================================
+# Paramètres, grille et exécution
+# =============================================================================
 
+# On suppose X(t) = X0 constant pour le premier affichage
+X0, Y0, Z0 = 1.0, 1.0, 1.0
+q = np.pi / 2  # nombre d'onde donné dans le sujet
+
+grid_length = 120
+grid_height = 120
+
+x_ = np.linspace(-2 * np.pi / q, 2 * np.pi / q, grid_length)
+z_ = np.linspace(0, 1, grid_height)
+X, Z = np.meshgrid(x_, z_)
+U = u(X, Z, q, X0)
+V = v(X, Z, q, X0)
+
+# AFFICHAGE avec X0 constant
+afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0)
+
+# Trajectoires (r vient de constante.py pour la première)
+traj = integration(X0, Y0, Z0, r)
+n = 50  # doit vérifier : 0 <= n < len(traj)
+# afficher_physique_instant(traj, n, q)
+
+# Cas r = 10 (régime stable / stationnaire) et r = 28 (régime chaotique)
+print("Calcul pour r = 10...")
+traj_r10 = integration(X0, Y0, Z0, r=10)
+# afficher_physique_instant(traj_r10, -1, q)
+
+print("Calcul pour r = 28...")
+traj_r28 = integration(X0, Y0, Z0, r=28)
+# afficher_physique_instant(traj_r28, -1, q)  # tester aussi n = 100, 500, -1
+
+# Animations
+#
+ani_28 = animer_lorenz_rapide(traj_r28, q=q, r=28, max_frames=250, interval=40)
+ani_10 = animer_lorenz_rapide(traj_r10, q=q, r=10, max_frames=250, interval=40)
+
+# Papillons pour plusieurs valeurs de r
+valeurs_r = [1, 18, 28]
+# papillons_r(valeurs_r)
+
+r = 28
+
+# REMARQUE ANALYSE : perturbé ou non, ce sont les mêmes trajectoires.
+# En régime chaotique, dans tous les cas le système explore tout l'attracteur,
+# donc la perturbation n'a pas tant d'impact visible ; avec r = 18 (pas de chaos)
+# il n'y a pas de bifurcation, car une perturbation de 1e-3 ne se voit pas.
+# papillons_CI_comparaison([X0, Y0, Z0], r)
+
+# comparer_r10_r28_instants(indices=[50, 300, 900])
+
+# papillons_r_non_constant(X0, Y0, Z0)
+
+# papillons_r_comparaison(X0, Y0, Z0, r_min=0, r_max=35, step=2, point_size=1.2)
