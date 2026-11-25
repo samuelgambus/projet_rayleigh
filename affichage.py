@@ -2,11 +2,10 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
 from constante import *
-from integration import * 
+from integration import *
 
-#on suppose X(t) = X0 constant
-#on définit ici les fonction u et v avec X0 constant
-
+# X(t) = X0 constant pour la 1ere partie
+# fonctions u, v, vort et temp (je les redefinis plus bas pour X(t))
 
 def u(x, z, q, X0):
     return X0 * np.pi * np.sin(np.pi * z) * np.sin(q * x)
@@ -14,21 +13,14 @@ def u(x, z, q, X0):
 def v(x, z, q, X_t):
     return X_t * q * np.cos(np.pi * z) * np.cos(q * x)
 
-
 def vort(x, z, q, X_t):
-    return (
-        np.pi**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
-        + q**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
-    )
-
+    return np.pi**2 * X_t * np.cos(np.pi * z) * np.sin(q * x) + q**2 * X_t * np.cos(np.pi * z) * np.sin(q * x)
 
 def temp(x, z, q, Y_t, Z_t):
     return Y_t * np.cos(np.pi * z) * np.cos(q * x) + Z_t * np.sin(2 * np.pi * z)
 
 
-# =============================================================================
-# Affichages
-# =============================================================================
+# ================= affichages =================
 
 def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
     bg_color = "#171d26"
@@ -36,50 +28,29 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), facecolor=bg_color)
 
-    # --- Graphique 1 (en haut) : Vorticité et champ de vitesse ---
+    # graphe du haut : vorticité + vitesse
     ax1.set_facecolor(bg_color)
-    mesh1 = ax1.pcolormesh(
-        X, Z, vort(X, Z, q, X0), shading="gouraud", cmap="coolwarm"
-    )
+    mesh1 = ax1.pcolormesh(X, Z, vort(X, Z, q, X0), shading="gouraud", cmap="coolwarm")
     cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
     cbar1.ax.yaxis.label.set_color(text_color)
     cbar1.ax.tick_params(colors=text_color)
 
-    ax1.quiver(
-        Xq,
-        Zq,
-        Uq,
-        Vq,
-        color="#0f172a",
-        scale=arrow_scale,
-        scale_units="xy",
-        width=0.003,
-    )
+    # Xq, Zq, Uq, Vq et arrow_scale viennent de l'autre fichier normalement
+    ax1.quiver(Xq, Zq, Uq, Vq, color="#0f172a", scale=arrow_scale, scale_units="xy", width=0.003)
     ax1.set_title(f"Vorticité et champ de vitesse (X0 = {X0})", color=text_color)
     ax1.set_xlabel("x", color=text_color)
     ax1.set_ylabel("z", color=text_color)
     ax1.tick_params(colors=text_color)
 
-    # --- Graphique 2 (en bas) : Température et champ de vitesse ---
+    # graphe du bas : température + vitesse
     ax2.set_facecolor(bg_color)
     mesh2 = ax2.pcolormesh(X, Z, temp(X, Z, q, Y0, Z0), shading="gouraud", cmap="inferno")
     cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
     cbar2.ax.yaxis.label.set_color(text_color)
     cbar2.ax.tick_params(colors=text_color)
 
-    ax2.quiver(
-        Xq,
-        Zq,
-        Uq,
-        Vq,
-        color="#f8fafc",
-        scale=arrow_scale,
-        scale_units="xy",
-        width=0.003,
-    )
-    ax2.set_title(
-        f"Température et champ de vitesse (Y0 = {Y0}, Z0 = {Z0})", color=text_color
-    )
+    ax2.quiver(Xq, Zq, Uq, Vq, color="#f8fafc", scale=arrow_scale, scale_units="xy", width=0.003)
+    ax2.set_title(f"Température et champ de vitesse (Y0 = {Y0}, Z0 = {Z0})", color=text_color)
     ax2.set_xlabel("x", color=text_color)
     ax2.set_ylabel("z", color=text_color)
     ax2.tick_params(colors=text_color)
@@ -88,7 +59,7 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
     plt.show()
 
 
-# --- Paramètres et grille ---
+# paramètres et grille
 X0, Y0, Z0 = 1, 1, 1
 q = np.pi / 2
 grid_length = 120
@@ -104,9 +75,7 @@ V = v(X, Z, q, X0)
 afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0)
 
 
-
-
-# --- Fonctions adaptées avec les valeurs à l'instant t ---
+# --- les memes fonctions mais avec la valeur à l'instant t ---
 #def u(x,z,q, X0):
     #return X0*np.pi*np.sin(np.pi*z)*np.sin(q*x)
 
@@ -122,31 +91,30 @@ def vort(x, z, q, X_t):
 def temp(x, z, q, Y_t, Z_t):
     return Y_t * np.cos(np.pi * z) * np.cos(q * x) + Z_t * np.sin(2 * np.pi * z)
 
+
 def afficher_physique_instant(traj, n, q, r=None):
     bg_color = "#171d26"
     text_color = "#f1f5f9"
 
-    # Récup des valeurs de X, Y, Z à l'instant t_n
+    # on recup X, Y, Z a l'instant n
     X_n = traj[n][0]
     Y_n = traj[n][1]
     Z_n = traj[n][2]
 
-    # Définition de l'espace physique (selon le sujet : x dans [-2*pi/q, 2*pi/q] et z dans [0, 1])
+    # x dans [-2pi/q, 2pi/q] et z dans [0,1] (cf sujet)
     x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 40)
     z_vals = np.linspace(0, 1, 40)
     X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
 
-    # Calcul des champs 
+    # les champs
     U = u(X_grid, Z_grid, q, X_n)
     V = v(X_grid, Z_grid, q, X_n)
     Vort_grid = vort(X_grid, Z_grid, q, X_n)
     Theta_grid = temp(X_grid, Z_grid, q, Y_n, Z_n)
 
-
-
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), facecolor=bg_color)
 
-    # --- Graphique 1 : Vorticité et Champ de vitesse ---
+    # haut : vorticité
     ax1.set_facecolor(bg_color)
     mesh1 = ax1.pcolormesh(X_grid, Z_grid, Vort_grid, shading="auto", cmap="coolwarm")
     cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
@@ -154,12 +122,12 @@ def afficher_physique_instant(traj, n, q, r=None):
     cbar1.ax.tick_params(colors=text_color)
 
     ax1.quiver(X_grid, Z_grid, U, V, color="black")
-    ax1.set_title(f"Vorticité et Vitesse (instant n={n}, r=28)", color=text_color)
+    ax1.set_title(f"Vorticité et Vitesse (instant n={n}, r=28)", color=text_color)  # TODO r pas toujours 28
     ax1.set_xlabel("x", color=text_color)
     ax1.set_ylabel("z", color=text_color)
     ax1.tick_params(colors=text_color)
 
-    # --- Graphique 2 : Température et Champ de vitesse ---
+    # bas : température
     ax2.set_facecolor(bg_color)
     mesh2 = ax2.pcolormesh(X_grid, Z_grid, Theta_grid, shading="auto", cmap="inferno")
     cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
@@ -175,40 +143,28 @@ def afficher_physique_instant(traj, n, q, r=None):
     plt.tight_layout()
     plt.show()
 
-# 1. Récupérer une trajectoire (ex. avec ta fonction existante)
+# trajectoire avec la fonction integration
 traj = integration(X0, Y0, Z0, r)
 
-# 2. Choisir l'indice de l'instant n et le paramètre q
-n = 50  # doit vérifier : 0 <= n < len(traj)
-q = np.pi / 2  # exemple classique pour le modèle de Lorenz / convection
+# instant n et q (faut 0 <= n < len(traj))
+n = 50
+q = np.pi / 2
 
-# 3. Lancer l'affichage
 #afficher_physique_instant(traj, n, q)
 
 
-
-# Paramètre du nombre d'onde q donné dans le sujet
-
-
-# Condition initiale et paramètres
+# conditions initiales
 X0, Y0, Z0 = 1.0, 1.0, 1.0
 
-# --- Cas r = 10 (Régime stable / stationnaire) ---
+# r = 10 -> stable
 print("Calcul pour r = 10...")
 traj_r10 = integration(X0, Y0, Z0, r=10)
-# On prend un instant vers la fin de la simulation (ex: le dernier point -1)
 #afficher_physique_instant(traj_r10, -1, q)
 
-# --- Cas r = 28 (Régime chaotique) ---
+# r = 28 -> chaos, ça bouge tout le temps donc tester plusieurs n (100, 500, -1)
 print("Calcul pour r = 28...")
 traj_r28 = integration(X0, Y0, Z0, r=28)
-# En régime chaotique, les mouvements changent tout le temps, vous pouvez tester différents indices n (ex: 100, 500, -1)
 #afficher_physique_instant(traj_r28, -1, q)
-
-
-
-import matplotlib.pyplot as plt
-import numpy as np
 
 
 def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
@@ -216,15 +172,14 @@ def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
     text_color = "#f1f5f9"
     suffix_r = f", r={r}" if r is not None else ""
 
-    # Grille fine pour un rendu lisse
+    # grille fine pour que ce soit lisse
     x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 120)
     z_vals = np.linspace(0, 1, 120)
     X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
 
-    # Grille espacée pour les flèches
+    # grille moins dense pour les flèches sinon illisible
     Xq, Zq = X_grid[::pas_q, ::pas_q], Z_grid[::pas_q, ::pas_q]
 
-    # Calcul des champs pour les instants choisis
     champs = []
     for n in instants:
         X_n = traj[n][0]
@@ -233,7 +188,7 @@ def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
         Vq_n = v(Xq, Zq, q, X_n)
         champs.append((n, Vort_n, Uq_n, Vq_n))
 
-    # Échelle commune de vorticité et de flèches sur les 3 instants comparés
+    # meme echelle pour tous les instants pour comparer
     vmin = min(np.min(item[1]) for item in champs)
     vmax = max(np.max(item[1]) for item in champs)
     max_speed = max(max(np.max(np.hypot(item[2], item[3])), 1e-6) for item in champs)
@@ -245,23 +200,12 @@ def afficher_vorticite_instants(traj, instants, q, r=None, pas_q=6):
 
     for ax, (n, Vort_n, Uq_n, Vq_n) in zip(axes, champs):
         ax.set_facecolor(bg_color)
-        mesh = ax.pcolormesh(
-            X_grid, Z_grid, Vort_n, shading="gouraud", cmap="coolwarm", vmin=vmin, vmax=vmax
-        )
+        mesh = ax.pcolormesh(X_grid, Z_grid, Vort_n, shading="gouraud", cmap="coolwarm", vmin=vmin, vmax=vmax)
         cbar = fig.colorbar(mesh, ax=ax, label="Vorticité")
         cbar.ax.yaxis.label.set_color(text_color)
         cbar.ax.tick_params(colors=text_color)
 
-        ax.quiver(
-            Xq,
-            Zq,
-            Uq_n,
-            Vq_n,
-            color="#0f172a",
-            scale=arrow_scale,
-            scale_units="xy",
-            width=0.003,
-        )
+        ax.quiver(Xq, Zq, Uq_n, Vq_n, color="#0f172a", scale=arrow_scale, scale_units="xy", width=0.003)
 
         ax.set_title(f"Vorticité — instant n={n}{suffix_r}", color=text_color)
         ax.set_xlabel("x", color=text_color)
@@ -281,14 +225,13 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=20, pas_q=6, interval=40, sav
     nb_frames = min(max_frames, len(traj))
     indices = np.unique(np.linspace(0, n_final, nb_frames, dtype=int))
 
-    # Grille fine pour le fond et grille espacée pour les flèches
+    # grille fine (fond) + grille espacée (flèches)
     x_vals = np.linspace(-2 * np.pi / q, 2 * np.pi / q, 120)
     z_vals = np.linspace(0, 1, 120)
     X_grid, Z_grid = np.meshgrid(x_vals, z_vals)
-
     Xq, Zq = X_grid[::pas_q, ::pas_q], Z_grid[::pas_q, ::pas_q]
 
-    # Estimation rapide des bornes et de l'échelle des flèches sur les frames échantillonnées
+    # on estime les bornes sur quelques frames seulement (sinon trop long)
     sample_idx = indices[:: max(1, len(indices) // 40)]
     vort_min, vort_max = np.inf, -np.inf
     theta_min, theta_max = np.inf, -np.inf
@@ -307,7 +250,7 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=20, pas_q=6, interval=40, sav
 
     arrow_scale = max_speed * 7.5
 
-    # État initial (n = indices[0] = 0)
+    # état de départ
     X0_n, Y0_n, Z0_n = traj[indices[0]]
     Vort0 = vort(X_grid, Z_grid, q, X0_n)
     Theta0 = temp(X_grid, Z_grid, q, Y0_n, Z0_n)
@@ -316,40 +259,35 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=20, pas_q=6, interval=40, sav
 
     fig, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 8), facecolor=bg_color)
 
-    # --- Graphique 1 (en haut) : Vorticité et Vitesse ---
+    # en haut : vorticité
     ax1.set_facecolor(bg_color)
-    mesh1 = ax1.pcolormesh(X_grid,Z_grid,Vort0,shading="gouraud",cmap="coolwarm",vmin=vort_min,vmax=vort_max,)
-    mesh1 = ax1.pcolormesh(X_grid,Z_grid,Vort0,shading="gouraud",cmap="coolwarm",vmin=vort_min,vmax=vort_max,)
+    mesh1 = ax1.pcolormesh(X_grid, Z_grid, Vort0, shading="gouraud", cmap="coolwarm", vmin=vort_min, vmax=vort_max)
     cbar1 = fig.colorbar(mesh1, ax=ax1, label="Vorticité")
     cbar1.ax.yaxis.label.set_color(text_color)
     cbar1.ax.tick_params(colors=text_color)
 
-    quiv1 = ax1.quiver(Xq,Zq,Uq0,Vq0,color="#0f172a",scale=arrow_scale,scale_units="xy",width=0.003,)
-    title1 = ax1.set_title(f"Vorticité et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",color=text_color,)
-    quiv1 = ax1.quiver(Xq,Zq,Uq0,Vq0,color="#0f172a",scale=arrow_scale,scale_units="xy",width=0.003,)
-    title1 = ax1.set_title(f"Vorticité et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",color=text_color,)
+    quiv1 = ax1.quiver(Xq, Zq, Uq0, Vq0, color="#0f172a", scale=arrow_scale, scale_units="xy", width=0.003)
+    title1 = ax1.set_title(f"Vorticité et Vitesse (n = {indices[0]}/{n_final}{suffix_r})", color=text_color)
     ax1.set_xlabel("x", color=text_color)
     ax1.set_ylabel("z", color=text_color)
     ax1.tick_params(colors=text_color)
 
-    # --- Graphique 2 (en bas) : Température et Vitesse ---
+    # en bas : température
     ax2.set_facecolor(bg_color)
-    mesh2 = ax2.pcolormesh(X_grid,Z_grid,Theta0,shading="gouraud",cmap="inferno",vmin=theta_min,vmax=theta_max)
+    mesh2 = ax2.pcolormesh(X_grid, Z_grid, Theta0, shading="gouraud", cmap="inferno", vmin=theta_min, vmax=theta_max)
     cbar2 = fig.colorbar(mesh2, ax=ax2, label="Écart de température theta")
     cbar2.ax.yaxis.label.set_color(text_color)
     cbar2.ax.tick_params(colors=text_color)
 
-    quiv2 = ax2.quiver(Xq,Zq,Uq0,Vq0,color="#f8fafc",scale=arrow_scale,scale_units="xy",width=0.003,)
-    title2 = ax2.set_title(
-        f"Température et Vitesse (n = {indices[0]}/{n_final}{suffix_r})",
-        color=text_color,
-    )
+    quiv2 = ax2.quiver(Xq, Zq, Uq0, Vq0, color="#f8fafc", scale=arrow_scale, scale_units="xy", width=0.003)
+    title2 = ax2.set_title(f"Température et Vitesse (n = {indices[0]}/{n_final}{suffix_r})", color=text_color)
     ax2.set_xlabel("x", color=text_color)
     ax2.set_ylabel("z", color=text_color)
     ax2.tick_params(colors=text_color)
 
     plt.tight_layout()
 
+    # mise à jour à chaque frame
     def update(frame_idx):
         n = indices[frame_idx]
         Xn, Yn, Zn = traj[n][0], traj[n][1], traj[n][2]
@@ -371,8 +309,8 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=20, pas_q=6, interval=40, sav
 
     ani = animation.FuncAnimation(fig, update, max_frames, interval=interval, blit=False)
 
-    if save_path:ani.save(save_path,writer="pillow",fps=25,dpi=120,savefig_kwargs={"facecolor": bg_color},)
-    
+    if save_path: ani.save(save_path, writer="pillow", fps=25, dpi=120, savefig_kwargs={"facecolor": bg_color})
+
     plt.show()
     return ani
 
@@ -382,10 +320,6 @@ traj_28 = integration(X0, Y0, Z0, 28)
 traj_10 = integration(X0, Y0, Z0, 10)
 #ani_28 = animer_lorenz_rapide(traj_28, q=q, r=28, max_frames=250, interval=40)
 #ani_10 = animer_lorenz_rapide(traj_10, q=q, r=10, max_frames=250, interval=40)
-
-
-
-
 
 
 def papillons_r(valeurs_r):
@@ -402,7 +336,7 @@ def papillons_r(valeurs_r):
         ax = fig.add_subplot(1, 3, i + 1, projection="3d", facecolor=bg_color)
         couleur_courbe = couleurs[i]
 
-        # Fond des faces 3D et grilles adaptés au thème sombre
+        # theme sombre pour les faces 3D
         for axis in (ax.xaxis, ax.yaxis, ax.zaxis):
             axis.pane.set_facecolor(bg_color)
             axis.pane.set_edgecolor(grid_color)
@@ -414,14 +348,7 @@ def papillons_r(valeurs_r):
         y_vals = [point[1] for point in traj]
         z_vals = [point[2] for point in traj]
 
-        ax.plot(
-            x_vals,
-            y_vals,
-            z_vals,
-            label=f"r = {r}",
-            color=couleur_courbe,
-            linewidth=0.6,
-        )
+        ax.plot(x_vals, y_vals, z_vals, label=f"r = {r}", color=couleur_courbe, linewidth=0.6)
 
         ax.set_title(f"Système de Lorenz (r = {r})", color=text_color)
         ax.set_xlabel("X", color=text_color)
@@ -445,7 +372,7 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
     ax = fig.add_subplot(1, 1, 1, projection="3d")
     ax.set_facecolor(bg_color)
 
-    # Récupération de la trajectoire à haute précision
+    # trajectoire avec r qui augmente
     traj = integration_r_increasing(X0, Y0, Z0)
     traj_np = np.asarray(traj, dtype=float)[::step]
 
@@ -453,58 +380,23 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
     y_vals = traj_np[:, 1]
     z_vals = traj_np[:, 2]
 
-    # Progression normalisée de 0 (début) à 1 (fin)
+    # 0 = debut, 1 = fin
     progression = np.linspace(0.0, 1.0, len(x_vals))
 
-    # Nuage de points fins avec dégradé temporel 'plasma'
-    scatter = ax.scatter(
-        x_vals,
-        y_vals,
-        z_vals,#type:ignore
-        c=progression,
-        cmap="plasma",
-        s=point_size, #type:ignore
-        alpha=0.85,
-        edgecolors="none",
-        depthshade=True,
-    )
+    scatter = ax.scatter(x_vals, y_vals, z_vals,  # type:ignore
+                         c=progression, cmap="plasma", s=point_size,  # type:ignore
+                         alpha=0.85, edgecolors="none", depthshade=True)
 
-    # Repères discrets pour l'instant initial et l'instant final
-    ax.scatter(
-        [x_vals[0]],
-        [y_vals[0]],
-        [z_vals[0]], #type:ignore
-        color="#38bdf8",
-        s=45,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Début",
-    )
-    ax.scatter(
-        [x_vals[-1]],
-        [y_vals[-1]],
-        [z_vals[-1]],#type:ignore
-        color="#fb7185",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Fin",
-    )
+    # point de départ et d'arrivée
+    ax.scatter([x_vals[0]], [y_vals[0]], [z_vals[0]],  # type:ignore
+               color="#38bdf8", s=45, edgecolors="#f8fafc", linewidths=0.8, label="Début")
+    ax.scatter([x_vals[-1]], [y_vals[-1]], [z_vals[-1]],  # type:ignore
+               color="#fb7185", s=55, edgecolors="#f8fafc", linewidths=0.8, label="Fin")
 
     ax.set_axis_off()
-    ax.set_title(
-        "Système de Lorenz avec r croissant (évolution temporelle)",
-        color=text_color,
-        fontsize=14,
-        pad=18,
-    )
+    ax.set_title("Système de Lorenz avec r croissant (évolution temporelle)", color=text_color, fontsize=14, pad=18)
 
-    leg = ax.legend(
-        loc="upper left",
-        facecolor="#1e2632",
-        edgecolor="#334155",
-        fontsize=10,
-    )
+    leg = ax.legend(loc="upper left", facecolor="#1e2632", edgecolor="#334155", fontsize=10)
     for txt in leg.get_texts():
         txt.set_color(text_color)
 
@@ -520,10 +412,7 @@ def papillons_r_non_constant(X0, Y0, Z0, step=2, point_size=1.2):
 #papillons_r_non_constant(X0, Y0, Z0)
 
 
-import matplotlib.pyplot as plt
-import numpy as np
-
-
+# (1ere version de la comparaison, la 2eme juste en dessous la remplace)
 def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_size=1.2):
     bg_color = "#171d26"
     panel_color = "#1e2632"
@@ -532,12 +421,12 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
 
     fig = plt.figure(figsize=(18, 9.5), facecolor=bg_color)
 
-    # --- 1. Trajectoire avec r croissant (gauche) ---
+    # gauche : r croissant
     traj_inc = np.asarray(integration_r_increasing(X0, Y0, Z0), dtype=float)[::step]
     x_inc, y_inc, z_inc = traj_inc[:, 0], traj_inc[:, 1], traj_inc[:, 2]
     n_inc = len(x_inc)
 
-    # Valeurs de r associées (si r_min et r_max sont fournis, on affiche l'échelle en r ; sinon progression 0 -> 1)
+    # si on donne r_min et r_max on affiche r, sinon juste 0 -> 1
     if r_min is not None and r_max is not None:
         r_vals = np.linspace(r_min, r_max, n_inc)
         color_metric = r_vals
@@ -551,69 +440,23 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     ax1 = fig.add_subplot(1, 2, 1, projection="3d")
     ax1.set_facecolor(bg_color)
 
-    scatter1 = ax1.scatter(
-        x_inc,
-        y_inc,
-        z_inc,
-        c=color_metric,
-        cmap="plasma",
-        s=point_size,
-        alpha=0.88,
-        edgecolors="none",
-        depthshade=True,
-    )
+    scatter1 = ax1.scatter(x_inc, y_inc, z_inc, c=color_metric, cmap="plasma", s=point_size,
+                           alpha=0.88, edgecolors="none", depthshade=True)
 
-    ax1.scatter(
-        [x_inc[0]],
-        [y_inc[0]],
-        [z_inc[0]],
-        color="#38bdf8",
-        s=45,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Début",
-    )
-    ax1.scatter(
-        [x_inc[-1]],
-        [y_inc[-1]],
-        [z_inc[-1]],
-        color="#fb7185",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Fin",
-    )
+    ax1.scatter([x_inc[0]], [y_inc[0]], [z_inc[0]], color="#38bdf8", s=45,
+                edgecolors="#f8fafc", linewidths=0.8, label="Début")
+    ax1.scatter([x_inc[-1]], [y_inc[-1]], [z_inc[-1]], color="#fb7185", s=55,
+                edgecolors="#f8fafc", linewidths=0.8, label="Fin")
 
     ax1.set_axis_off()
-    ax1.set_title(
-        f"Lorenz — r variable\n({r_info_text})",
-        color=text_color,
-        fontsize=13,
-        pad=14,
-    )
+    ax1.set_title(f"Lorenz — r variable\n({r_info_text})", color=text_color, fontsize=13, pad=14)
 
-    # Encadré d'information sur r à côté/dans la zone du graphique gauche
-    ax1.text2D(
-        0.02,
-        0.12,
-        f"Infos paramètre r :\n• {r_info_text}\n• Points affichés : {n_inc}",
-        transform=ax1.transAxes,
-        color=text_color,
-        fontsize=9.5,
-        bbox=dict(
-            boxstyle="round,pad=0.45",
-            facecolor=panel_color,
-            edgecolor=grid_color,
-            alpha=0.92,
-        ),
-    )
+    # petit encadré avec les infos sur r
+    ax1.text2D(0.02, 0.12, f"Infos paramètre r :\n• {r_info_text}\n• Points affichés : {n_inc}",
+               transform=ax1.transAxes, color=text_color, fontsize=9.5,
+               bbox=dict(boxstyle="round,pad=0.45", facecolor=panel_color, edgecolor=grid_color, alpha=0.92))
 
-    leg1 = ax1.legend(
-        loc="upper left",
-        facecolor=panel_color,
-        edgecolor=grid_color,
-        fontsize=9.5,
-    )
+    leg1 = ax1.legend(loc="upper left", facecolor=panel_color, edgecolor=grid_color, fontsize=9.5)
     for txt in leg1.get_texts():
         txt.set_color(text_color)
 
@@ -622,7 +465,7 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     cbar1.ax.yaxis.set_tick_params(color=text_color, labelcolor=text_color)
     cbar1.outline.set_edgecolor(grid_color)
 
-    # --- 2. Trajectoire avec r = 28 fixé (droite) ---
+    # droite : r = 28 fixe
     traj_28 = np.asarray(integration(X0, Y0, Z0, 28), dtype=float)[::step]
     x_28, y_28, z_28 = traj_28[:, 0], traj_28[:, 1], traj_28[:, 2]
     prog_28 = np.linspace(0.0, 1.0, len(x_28))
@@ -630,53 +473,18 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     ax2 = fig.add_subplot(1, 2, 2, projection="3d")
     ax2.set_facecolor(bg_color)
 
-    scatter2 = ax2.scatter(
-        x_28,
-        y_28,
-        z_28,
-        c=prog_28,
-        cmap="viridis",
-        s=point_size,
-        alpha=0.88,
-        edgecolors="none",
-        depthshade=True,
-    )
+    scatter2 = ax2.scatter(x_28, y_28, z_28, c=prog_28, cmap="viridis", s=point_size,
+                           alpha=0.88, edgecolors="none", depthshade=True)
 
-    ax2.scatter(
-        [x_28[0]],
-        [y_28[0]],
-        [z_28[0]],
-        color="#38bdf8",
-        s=45,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Début",
-    )
-    ax2.scatter(
-        [x_28[-1]],
-        [y_28[-1]],
-        [z_28[-1]],
-        color="#fb7185",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.8,
-        label="Fin",
-    )
+    ax2.scatter([x_28[0]], [y_28[0]], [z_28[0]], color="#38bdf8", s=45,
+                edgecolors="#f8fafc", linewidths=0.8, label="Début")
+    ax2.scatter([x_28[-1]], [y_28[-1]], [z_28[-1]], color="#fb7185", s=55,
+                edgecolors="#f8fafc", linewidths=0.8, label="Fin")
 
     ax2.set_axis_off()
-    ax2.set_title(
-        "Lorenz — r = 28 fixé\n(Régime chaotique stationnaire)",
-        color=text_color,
-        fontsize=13,
-        pad=14,
-    )
+    ax2.set_title("Lorenz — r = 28 fixé\n(Régime chaotique stationnaire)", color=text_color, fontsize=13, pad=14)
 
-    leg2 = ax2.legend(
-        loc="upper left",
-        facecolor=panel_color,
-        edgecolor=grid_color,
-        fontsize=9.5,
-    )
+    leg2 = ax2.legend(loc="upper left", facecolor=panel_color, edgecolor=grid_color, fontsize=9.5)
     for txt in leg2.get_texts():
         txt.set_color(text_color)
 
@@ -689,28 +497,12 @@ def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_si
     plt.show()
 
 
-# Exemple d'appel (passe r_min et r_max si tu veux afficher les valeurs exactes de r)
+# exemple (mettre r_min et r_max si on veut les vraies valeurs de r)
 #papillons_r_comparaison(X0, Y0, Z0, r_min=0, r_max=35, step=2, point_size=1.2)
 
 
-
-
-import matplotlib.cm as cm
-import matplotlib.pyplot as plt
-import numpy as np
-from matplotlib.colors import Normalize
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-import matplotlib.pyplot as plt
-import numpy as np
-
-
-def papillons_r_comparaison(
-    X0, Y0, Z0, r_min=None, r_max=None, step=2, point_size=1.2, point_size_28=2.2
-):
+# 2eme version : pareil mais la couleur de droite = celle de r=28 sur la colorbar de gauche
+def papillons_r_comparaison(X0, Y0, Z0, r_min=None, r_max=None, step=2, point_size=1.2, point_size_28=2.2):
     bg_color = "#171d26"
     panel_color = "#1e2632"
     text_color = "#f1f5f9"
@@ -720,10 +512,8 @@ def papillons_r_comparaison(
 
     fig = plt.figure(figsize=(18, 9.5), facecolor=bg_color)
 
-    # --- 1. Trajectoire avec r croissant (gauche) ---
-    traj_inc = np.asarray(integration_r_increasing(X0, Y0, Z0), dtype=float)[
-        ::step
-    ]
+    # gauche : r croissant
+    traj_inc = np.asarray(integration_r_increasing(X0, Y0, Z0), dtype=float)[::step]
     x_inc, y_inc, z_inc = traj_inc[:, 0], traj_inc[:, 1], traj_inc[:, 2]
     n_inc = len(x_inc)
 
@@ -732,6 +522,7 @@ def papillons_r_comparaison(
         color_metric = r_vals
         cbar_label = "Paramètre r (croissant)"
         r_info_text = f"r : {r_min:g} → {r_max:g} (croissant)"
+        # position de r=28 dans la colormap
         if r_max != r_min:
             r28_norm = np.clip((28.0 - r_min) / (r_max - r_min), 0.0, 1.0)
         else:
@@ -740,75 +531,30 @@ def papillons_r_comparaison(
         color_metric = np.linspace(0.0, 1.0, n_inc)
         cbar_label = "Progression temporelle / r (0 → 1)"
         r_info_text = "r croissant au cours du temps"
-        r28_norm = 0.75
+        r28_norm = 0.75  # valeur au pif
 
     couleur_r28 = cmap(r28_norm)
 
     ax1 = fig.add_subplot(1, 2, 1, projection="3d")
     ax1.set_facecolor(bg_color)
 
-    scatter1 = ax1.scatter(
-        x_inc,
-        y_inc,
-        z_inc,#type:ignore
-        c=color_metric,
-        cmap=cmap,
-        s=point_size,#type:ignore
-        alpha=0.88,
-        edgecolors="none",
-        depthshade=True,
-    )
+    scatter1 = ax1.scatter(x_inc, y_inc, z_inc,  # type:ignore
+                           c=color_metric, cmap=cmap, s=point_size,  # type:ignore
+                           alpha=0.88, edgecolors="none", depthshade=True)
 
-    ax1.scatter(
-        [x_inc[0]],
-        [y_inc[0]],
-        [z_inc[0]], #type:ignore
-        color="#38bdf8",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.9,
-        label="État initial",
-    )
-    ax1.scatter(
-        [x_inc[-1]],
-        [y_inc[-1]],
-        [z_inc[-1]], #type:ignore
-        color="#fb7185",
-        s=65,
-        edgecolors="#f8fafc",
-        linewidths=0.9,
-        label="État final",
-    )
+    ax1.scatter([x_inc[0]], [y_inc[0]], [z_inc[0]],  # type:ignore
+                color="#38bdf8", s=55, edgecolors="#f8fafc", linewidths=0.9, label="État initial")
+    ax1.scatter([x_inc[-1]], [y_inc[-1]], [z_inc[-1]],  # type:ignore
+                color="#fb7185", s=65, edgecolors="#f8fafc", linewidths=0.9, label="État final")
 
     ax1.set_axis_off()
-    ax1.set_title(
-        f"Lorenz — r variable\n({r_info_text})",
-        color=text_color,
-        fontsize=13,
-        pad=14,
-    )
+    ax1.set_title(f"Lorenz — r variable\n({r_info_text})", color=text_color, fontsize=13, pad=14)
 
-    ax1.text2D(
-        0.02,
-        0.12,
-        f"Infos paramètre r :\n• {r_info_text}\n• Points affichés : {n_inc}",
-        transform=ax1.transAxes,
-        color=text_color,
-        fontsize=9.5,
-        bbox=dict(
-            boxstyle="round,pad=0.45",
-            facecolor=panel_color,
-            edgecolor=grid_color,
-            alpha=0.92,
-        ),
-    )
+    ax1.text2D(0.02, 0.12, f"Infos paramètre r :\n• {r_info_text}\n• Points affichés : {n_inc}",
+               transform=ax1.transAxes, color=text_color, fontsize=9.5,
+               bbox=dict(boxstyle="round,pad=0.45", facecolor=panel_color, edgecolor=grid_color, alpha=0.92))
 
-    leg1 = ax1.legend(
-        loc="upper left",
-        facecolor=panel_color,
-        edgecolor=grid_color,
-        fontsize=9.5,
-    )
+    leg1 = ax1.legend(loc="upper left", facecolor=panel_color, edgecolor=grid_color, fontsize=9.5)
     for txt in leg1.get_texts():
         txt.set_color(text_color)
 
@@ -817,60 +563,26 @@ def papillons_r_comparaison(
     cbar1.ax.yaxis.set_tick_params(color=text_color, labelcolor=text_color)
     cbar1.outline.set_edgecolor(grid_color)
 
-    # --- 2. Trajectoire avec r = 28 fixé (droite) ---
+    # droite : r = 28 fixe
     traj_28 = np.asarray(integration(X0, Y0, Z0, 28), dtype=float)[::step]
     x_28, y_28, z_28 = traj_28[:, 0], traj_28[:, 1], traj_28[:, 2]
 
     ax2 = fig.add_subplot(1, 2, 2, projection="3d")
     ax2.set_facecolor(bg_color)
 
-    ax2.scatter(
-        x_28,
-        y_28,
-        z_28,
-        color=couleur_r28,
-        s=point_size_28,
-        alpha=0.85,
-        edgecolors="none",
-        depthshade=True,
-    )
+    ax2.scatter(x_28, y_28, z_28, color=couleur_r28, s=point_size_28,
+                alpha=0.85, edgecolors="none", depthshade=True)
 
-    # Uniquement les points initial et final mis en valeur
-    ax2.scatter(
-        [x_28[0]],
-        [y_28[0]],
-        [z_28[0]],
-        color="#38bdf8",
-        s=55,
-        edgecolors="#f8fafc",
-        linewidths=0.9,
-        label="État initial",
-    )
-    ax2.scatter(
-        [x_28[-1]],
-        [y_28[-1]],
-        [z_28[-1]],
-        color="#fb7185",
-        s=65,
-        edgecolors="#f8fafc",
-        linewidths=0.9,
-        label="État final",
-    )
+    # on met juste le début et la fin en évidence
+    ax2.scatter([x_28[0]], [y_28[0]], [z_28[0]], color="#38bdf8", s=55,
+                edgecolors="#f8fafc", linewidths=0.9, label="État initial")
+    ax2.scatter([x_28[-1]], [y_28[-1]], [z_28[-1]], color="#fb7185", s=65,
+                edgecolors="#f8fafc", linewidths=0.9, label="État final")
 
     ax2.set_axis_off()
-    ax2.set_title(
-        "Lorenz — r = 28 fixé\n(Couleur associée à r = 28)",
-        color=text_color,
-        fontsize=13,
-        pad=14,
-    )
+    ax2.set_title("Lorenz — r = 28 fixé\n(Couleur associée à r = 28)", color=text_color, fontsize=13, pad=14)
 
-    leg2 = ax2.legend(
-        loc="upper left",
-        facecolor=panel_color,
-        edgecolor=grid_color,
-        fontsize=9.5,
-    )
+    leg2 = ax2.legend(loc="upper left", facecolor=panel_color, edgecolor=grid_color, fontsize=9.5)
     for txt in leg2.get_texts():
         txt.set_color(text_color)
 
@@ -878,13 +590,11 @@ def papillons_r_comparaison(
     plt.show()
 
 
-# =============================================================================
-# Paramètres, grille et exécution
-# =============================================================================
+# ================= paramètres + exécution =================
 
-# On suppose X(t) = X0 constant pour le premier affichage
+# X(t) = X0 cst pour le 1er affichage
 X0, Y0, Z0 = 1.0, 1.0, 1.0
-q = np.pi / 2  # nombre d'onde donné dans le sujet
+q = np.pi / 2  # nombre d'onde (sujet)
 
 grid_length = 120
 grid_height = 120
@@ -895,42 +605,38 @@ X, Z = np.meshgrid(x_, z_)
 U = u(X, Z, q, X0)
 V = v(X, Z, q, X0)
 
-# AFFICHAGE avec X0 constant
+# affichage avec X0 constant
 afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0)
 
-# Trajectoires (r vient de constante.py pour la première)
+# r vient de constante.py
 traj = integration(X0, Y0, Z0, r)
-n = 50  # doit vérifier : 0 <= n < len(traj)
-# afficher_physique_instant(traj, n, q)
+n = 50  # 0 <= n < len(traj)
+#afficher_physique_instant(traj, n, q)
 
-# Cas r = 10 (régime stable / stationnaire) et r = 28 (régime chaotique)
+# r = 10 (stable) et r = 28 (chaos)
 print("Calcul pour r = 10...")
 traj_r10 = integration(X0, Y0, Z0, r=10)
-# afficher_physique_instant(traj_r10, -1, q)
+#afficher_physique_instant(traj_r10, -1, q)
 
 print("Calcul pour r = 28...")
 traj_r28 = integration(X0, Y0, Z0, r=28)
-# afficher_physique_instant(traj_r28, -1, q)  # tester aussi n = 100, 500, -1
+#afficher_physique_instant(traj_r28, -1, q)  # tester aussi n = 100, 500, -1
 
-# Animations
-#
+# animations
 ani_28 = animer_lorenz_rapide(traj_r28, q=q, r=28, max_frames=250, interval=40)
 ani_10 = animer_lorenz_rapide(traj_r10, q=q, r=10, max_frames=250, interval=40)
 
-# Papillons pour plusieurs valeurs de r
+# papillons pour plusieurs r
 valeurs_r = [1, 18, 28]
-# papillons_r(valeurs_r)
+#papillons_r(valeurs_r)
 
 r = 28
 
-# REMARQUE ANALYSE : perturbé ou non, ce sont les mêmes trajectoires.
-# En régime chaotique, dans tous les cas le système explore tout l'attracteur,
-# donc la perturbation n'a pas tant d'impact visible ; avec r = 18 (pas de chaos)
-# il n'y a pas de bifurcation, car une perturbation de 1e-3 ne se voit pas.
-# papillons_CI_comparaison([X0, Y0, Z0], r)
+# REMARQUE : perturbé ou pas c'est les memes trajectoires. En chaos le systeme
+# explore tout l'attracteur donc la perturbation change pas grand chose visuellement.
+# avec r = 18 (pas de chaos) y'a pas de bifurcation non plus, 1e-3 ça se voit pas
+#papillons_CI_comparaison([X0, Y0, Z0], r)
 
-# comparer_r10_r28_instants(indices=[50, 300, 900])
-
-# papillons_r_non_constant(X0, Y0, Z0)
-
-# papillons_r_comparaison(X0, Y0, Z0, r_min=0, r_max=35, step=2, point_size=1.2)
+#comparer_r10_r28_instants(indices=[50, 300, 900])
+#papillons_r_non_constant(X0, Y0, Z0)
+#papillons_r_comparaison(X0, Y0, Z0, r_min=0, r_max=35, step=2, point_size=1.2)
