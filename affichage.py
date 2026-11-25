@@ -1,8 +1,39 @@
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import numpy as np
-from constante import *
-from integration import *
+
+try:
+    from constante import *
+except ImportError:
+    r = 28  # valeur par defaut si constante.py est introuvable
+
+try:
+    from integration import *
+except ImportError:
+    # integration.py introuvable -> petit RK4 de secours (sigma=10, b=8/3, dt=0.01)
+    def _lorenz(p, r, sigma=10.0, b=8.0 / 3.0):
+        x, y, z = p
+        return np.array([sigma * (y - x), r * x - y - x * z, x * y - b * z])
+
+    def _rk4(p, r, dt):
+        k1 = _lorenz(p, r)
+        k2 = _lorenz(p + dt / 2 * k1, r)
+        k3 = _lorenz(p + dt / 2 * k2, r)
+        k4 = _lorenz(p + dt * k3, r)
+        return p + dt / 6 * (k1 + 2 * k2 + 2 * k3 + k4)
+
+    def integration(X0, Y0, Z0, r, dt=0.01, N=5000):
+        traj = [np.array([X0, Y0, Z0], dtype=float)]
+        for _ in range(N):
+            traj.append(_rk4(traj[-1], r, dt))
+        return traj
+
+    def integration_r_increasing(X0, Y0, Z0, r_min=0.0, r_max=35.0, dt=0.01, N=5000):
+        traj = [np.array([X0, Y0, Z0], dtype=float)]
+        for i in range(N):
+            r_i = r_min + (r_max - r_min) * i / N
+            traj.append(_rk4(traj[-1], r_i, dt))
+        return traj
 
 # X(t) = X0 constant pour la 1ere partie
 # fonctions u, v, vort et temp (je les redefinis plus bas pour X(t))
@@ -35,8 +66,9 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
     cbar1.ax.yaxis.label.set_color(text_color)
     cbar1.ax.tick_params(colors=text_color)
 
-    # Xq, Zq, Uq, Vq et arrow_scale viennent de l'autre fichier normalement
-    ax1.quiver(X, Z, U, V, color="#0f172a", scale_units="xy", width=0.003)
+    # on garde 1 fleche sur 6 sinon trop dense
+    pas = 6
+    ax1.quiver(X[::pas, ::pas], Z[::pas, ::pas], U[::pas, ::pas], V[::pas, ::pas], color="#0f172a", width=0.003)
     ax1.set_title(f"Vorticité et champ de vitesse (X0 = {X0})", color=text_color)
     ax1.set_xlabel("x", color=text_color)
     ax1.set_ylabel("z", color=text_color)
@@ -49,7 +81,7 @@ def afficher_vorti_temp_cst(X, Z, U, V, q, X0, Y0, Z0):
     cbar2.ax.yaxis.label.set_color(text_color)
     cbar2.ax.tick_params(colors=text_color)
 
-    ax2.quiver(X, Z, U, V, color="#f8fafc", scale_units="xy", width=0.003)
+    ax2.quiver(X[::pas, ::pas], Z[::pas, ::pas], U[::pas, ::pas], V[::pas, ::pas], color="#f8fafc", width=0.003)
     ax2.set_title(f"Température et champ de vitesse (Y0 = {Y0}, Z0 = {Z0})", color=text_color)
     ax2.set_xlabel("x", color=text_color)
     ax2.set_ylabel("z", color=text_color)
@@ -122,7 +154,7 @@ def afficher_physique_instant(traj, n, q, r=None):
     cbar1.ax.tick_params(colors=text_color)
 
     ax1.quiver(X_grid, Z_grid, U, V, color="black")
-    ax1.set_title(f"Vorticité et Vitesse (instant n={n}, r=28)", color=text_color)  # TODO r pas toujours 28
+    ax1.set_title(f"Vorticité et Vitesse (instant n={n}, r={r})", color=text_color)
     ax1.set_xlabel("x", color=text_color)
     ax1.set_ylabel("z", color=text_color)
     ax1.tick_params(colors=text_color)
@@ -135,7 +167,7 @@ def afficher_physique_instant(traj, n, q, r=None):
     cbar2.ax.tick_params(colors=text_color)
 
     ax2.quiver(X_grid, Z_grid, U, V, color="white")
-    ax2.set_title(f"Température et Vitesse (instant n={n}, r=28)", color=text_color)
+    ax2.set_title(f"Température et Vitesse (instant n={n}, r={r})", color=text_color)
     ax2.set_xlabel("x", color=text_color)
     ax2.set_ylabel("z", color=text_color)
     ax2.tick_params(colors=text_color)
@@ -307,7 +339,7 @@ def animer_lorenz_rapide(traj, q, r=28, max_frames=20, pas_q=6, interval=40, sav
 
         return mesh1, quiv1, title1, mesh2, quiv2, title2
 
-    ani = animation.FuncAnimation(fig, update, max_frames, interval=interval, blit=False)
+    ani = animation.FuncAnimation(fig, update, len(indices), interval=interval, blit=False)
 
     if save_path: ani.save(save_path, writer="pillow", fps=25, dpi=120, savefig_kwargs={"facecolor": bg_color})
 
